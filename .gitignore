@@ -1,0 +1,43 @@
+# --- Sys ---
+.DS_Store
+Thumbs.db
+*.log
+
+# --- Node / Dependence ---
+node_modules/
+dist/
+.npm
+.eslintcache
+
+# --- Environment ---
+.env
+.env.local
+.env.production
+.env.development
+
+# --- Next.js (frontend) ---
+.next/
+out/
+
+# --- NestJS (backend) ---
+/apps/backend/dist
+/apps/backend/build
+
+# --- Vite (admin) ---
+/apps/admin/dist
+
+# --- React Native (apk) ---
+.expo/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+/apps/apk/android/.gradle
+/apps/apk/android/app/build
+/apps/apk/ios/Pods
+/apps/apk/ios/build
+
+# --- Prisma ---
+/apps/backend/prisma/dev.db
+/apps/backend/prisma/dev.db-journal

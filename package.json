@@ -1,0 +1,36 @@
+{
+  "name": "soundfix-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "dev:backend": "pnpm --filter backend start:dev",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "dev:admin": "pnpm --filter admin dev",
+    "dev:apk": "pnpm --filter apk start",
+    
+    "build": "pnpm -r build",
+    "build:backend": "pnpm --filter backend build",
+    "build:frontend": "pnpm --filter frontend build",
+    "build:admin": "pnpm --filter admin build",
+    "build:apk": "pnpm --filter apk build",
+    
+    "test": "pnpm -r test",
+    "test:ci": "pnpm -r test:ci",
+    
+    "lint": "pnpm -r lint",
+    "format": "prettier --write .",
+    
+    "clean": "pnpm -r exec rm -rf node_modules dist build .next",
+    "clean:all": "rm -rf node_modules pnpm-lock.yaml && pnpm -r exec rm -rf node_modules dist build .next",
+    
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "husky": "^9.0.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.5"
+  },
+  "packageManager": "pnpm@10.34.5"
+}

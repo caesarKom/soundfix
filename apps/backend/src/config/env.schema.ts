@@ -11,6 +11,14 @@ export const envSchema = z.object({
   // We cast the string from .env to the type expected by the JWT library
   ACCESS_TOKEN_EXPIRES: z.string().min(1) as unknown as z.ZodType<any>,
   REFRESH_TOKEN_EXPIRES: z.string().min(1) as unknown as z.ZodType<any>,
+
+  // Email
+  EMAIL_HOST: z.string().min(1),
+  EMAIL_PORT: z.string().default('587').transform(Number),
+  EMAIL_USER: z.string().min(1),
+  EMAIL_PASS: z.string().min(1),
+  EMAIL_FROM: z.string().min(1),
+
 });
 
 // Create automatic TypeScript types based on the Zod schema

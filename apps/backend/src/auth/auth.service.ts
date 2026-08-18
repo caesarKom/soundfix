@@ -67,7 +67,7 @@ export class AuthService {
     });
 
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7); // 7 day
+    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
 
     // Save the new token as an active session
     await this.prisma.session.create({
@@ -84,5 +84,18 @@ export class AuthService {
       accessToken,
       refreshToken,
     };
+  }
+
+  async logout(refreshToken: string) {
+    if (!refreshToken) return;
+
+    try {
+      // Delete the session from the database so that no one else can use this token
+      await this.prisma.session.deleteMany({
+        where: { tokenHash: refreshToken },
+      });
+    } catch (error) {
+      // If the token is no longer in the database (e.g. expired), we ignore the error to ensure successful logout
+    }
   }
 }

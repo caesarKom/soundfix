@@ -1,0 +1,42 @@
+model Music {
+  id          String   @id @default(uuid())
+  title       String
+  artist      String   
+  album       String? 
+  duration    Int   
+  
+  audioUrl    String   
+  coverUrl    String  
+  
+  playCount   Int      @default(0)
+  isPublic    Boolean  @default(true)
+  
+  uploadedBy  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+
+  // Many-to-Many
+  playlists   Playlist[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("music") // Name of table in the database
+}
+
+model Playlist {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  coverUrl    String? 
+  isPrivate   Boolean  @default(false)
+
+  owner       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+
+  songs       Music[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("playlists")
+}

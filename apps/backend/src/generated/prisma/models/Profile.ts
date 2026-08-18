@@ -206,7 +206,7 @@ export type ProfileWhereInput = {
   bio?: Prisma.StringNullableFilter<"Profile"> | string | null
   avatar?: Prisma.StringNullableFilter<"Profile"> | string | null
   gender?: Prisma.EnumGenderFilter<"Profile"> | $Enums.Gender
-  userProfile?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }
 
 export type ProfileOrderByWithRelationInput = {
@@ -218,7 +218,7 @@ export type ProfileOrderByWithRelationInput = {
   bio?: Prisma.SortOrderInput | Prisma.SortOrder
   avatar?: Prisma.SortOrderInput | Prisma.SortOrder
   gender?: Prisma.SortOrder
-  userProfile?: Prisma.UserOrderByWithRelationInput
+  user?: Prisma.UserOrderByWithRelationInput
 }
 
 export type ProfileWhereUniqueInput = Prisma.AtLeast<{
@@ -233,7 +233,7 @@ export type ProfileWhereUniqueInput = Prisma.AtLeast<{
   bio?: Prisma.StringNullableFilter<"Profile"> | string | null
   avatar?: Prisma.StringNullableFilter<"Profile"> | string | null
   gender?: Prisma.EnumGenderFilter<"Profile"> | $Enums.Gender
-  userProfile?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }, "id" | "userId">
 
 export type ProfileOrderByWithAggregationInput = {
@@ -272,7 +272,7 @@ export type ProfileCreateInput = {
   bio?: string | null
   avatar?: string | null
   gender?: $Enums.Gender
-  userProfile: Prisma.UserCreateNestedOneWithoutProfileInput
+  user: Prisma.UserCreateNestedOneWithoutProfileInput
 }
 
 export type ProfileUncheckedCreateInput = {
@@ -294,7 +294,7 @@ export type ProfileUpdateInput = {
   bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
-  userProfile?: Prisma.UserUpdateOneRequiredWithoutProfileNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProfileNestedInput
 }
 
 export type ProfileUncheckedUpdateInput = {
@@ -378,43 +378,43 @@ export type ProfileMinOrderByAggregateInput = {
   gender?: Prisma.SortOrder
 }
 
-export type ProfileCreateNestedOneWithoutUserProfileInput = {
-  create?: Prisma.XOR<Prisma.ProfileCreateWithoutUserProfileInput, Prisma.ProfileUncheckedCreateWithoutUserProfileInput>
-  connectOrCreate?: Prisma.ProfileCreateOrConnectWithoutUserProfileInput
+export type ProfileCreateNestedOneWithoutUserInput = {
+  create?: Prisma.XOR<Prisma.ProfileCreateWithoutUserInput, Prisma.ProfileUncheckedCreateWithoutUserInput>
+  connectOrCreate?: Prisma.ProfileCreateOrConnectWithoutUserInput
   connect?: Prisma.ProfileWhereUniqueInput
 }
 
-export type ProfileUncheckedCreateNestedOneWithoutUserProfileInput = {
-  create?: Prisma.XOR<Prisma.ProfileCreateWithoutUserProfileInput, Prisma.ProfileUncheckedCreateWithoutUserProfileInput>
-  connectOrCreate?: Prisma.ProfileCreateOrConnectWithoutUserProfileInput
+export type ProfileUncheckedCreateNestedOneWithoutUserInput = {
+  create?: Prisma.XOR<Prisma.ProfileCreateWithoutUserInput, Prisma.ProfileUncheckedCreateWithoutUserInput>
+  connectOrCreate?: Prisma.ProfileCreateOrConnectWithoutUserInput
   connect?: Prisma.ProfileWhereUniqueInput
 }
 
-export type ProfileUpdateOneWithoutUserProfileNestedInput = {
-  create?: Prisma.XOR<Prisma.ProfileCreateWithoutUserProfileInput, Prisma.ProfileUncheckedCreateWithoutUserProfileInput>
-  connectOrCreate?: Prisma.ProfileCreateOrConnectWithoutUserProfileInput
-  upsert?: Prisma.ProfileUpsertWithoutUserProfileInput
+export type ProfileUpdateOneWithoutUserNestedInput = {
+  create?: Prisma.XOR<Prisma.ProfileCreateWithoutUserInput, Prisma.ProfileUncheckedCreateWithoutUserInput>
+  connectOrCreate?: Prisma.ProfileCreateOrConnectWithoutUserInput
+  upsert?: Prisma.ProfileUpsertWithoutUserInput
   disconnect?: Prisma.ProfileWhereInput | boolean
   delete?: Prisma.ProfileWhereInput | boolean
   connect?: Prisma.ProfileWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.ProfileUpdateToOneWithWhereWithoutUserProfileInput, Prisma.ProfileUpdateWithoutUserProfileInput>, Prisma.ProfileUncheckedUpdateWithoutUserProfileInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProfileUpdateToOneWithWhereWithoutUserInput, Prisma.ProfileUpdateWithoutUserInput>, Prisma.ProfileUncheckedUpdateWithoutUserInput>
 }
 
-export type ProfileUncheckedUpdateOneWithoutUserProfileNestedInput = {
-  create?: Prisma.XOR<Prisma.ProfileCreateWithoutUserProfileInput, Prisma.ProfileUncheckedCreateWithoutUserProfileInput>
-  connectOrCreate?: Prisma.ProfileCreateOrConnectWithoutUserProfileInput
-  upsert?: Prisma.ProfileUpsertWithoutUserProfileInput
+export type ProfileUncheckedUpdateOneWithoutUserNestedInput = {
+  create?: Prisma.XOR<Prisma.ProfileCreateWithoutUserInput, Prisma.ProfileUncheckedCreateWithoutUserInput>
+  connectOrCreate?: Prisma.ProfileCreateOrConnectWithoutUserInput
+  upsert?: Prisma.ProfileUpsertWithoutUserInput
   disconnect?: Prisma.ProfileWhereInput | boolean
   delete?: Prisma.ProfileWhereInput | boolean
   connect?: Prisma.ProfileWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.ProfileUpdateToOneWithWhereWithoutUserProfileInput, Prisma.ProfileUpdateWithoutUserProfileInput>, Prisma.ProfileUncheckedUpdateWithoutUserProfileInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProfileUpdateToOneWithWhereWithoutUserInput, Prisma.ProfileUpdateWithoutUserInput>, Prisma.ProfileUncheckedUpdateWithoutUserInput>
 }
 
 export type EnumGenderFieldUpdateOperationsInput = {
   set?: $Enums.Gender
 }
 
-export type ProfileCreateWithoutUserProfileInput = {
+export type ProfileCreateWithoutUserInput = {
   id?: string
   firstName?: string | null
   lastName?: string | null
@@ -424,7 +424,7 @@ export type ProfileCreateWithoutUserProfileInput = {
   gender?: $Enums.Gender
 }
 
-export type ProfileUncheckedCreateWithoutUserProfileInput = {
+export type ProfileUncheckedCreateWithoutUserInput = {
   id?: string
   firstName?: string | null
   lastName?: string | null
@@ -434,23 +434,23 @@ export type ProfileUncheckedCreateWithoutUserProfileInput = {
   gender?: $Enums.Gender
 }
 
-export type ProfileCreateOrConnectWithoutUserProfileInput = {
+export type ProfileCreateOrConnectWithoutUserInput = {
   where: Prisma.ProfileWhereUniqueInput
-  create: Prisma.XOR<Prisma.ProfileCreateWithoutUserProfileInput, Prisma.ProfileUncheckedCreateWithoutUserProfileInput>
+  create: Prisma.XOR<Prisma.ProfileCreateWithoutUserInput, Prisma.ProfileUncheckedCreateWithoutUserInput>
 }
 
-export type ProfileUpsertWithoutUserProfileInput = {
-  update: Prisma.XOR<Prisma.ProfileUpdateWithoutUserProfileInput, Prisma.ProfileUncheckedUpdateWithoutUserProfileInput>
-  create: Prisma.XOR<Prisma.ProfileCreateWithoutUserProfileInput, Prisma.ProfileUncheckedCreateWithoutUserProfileInput>
+export type ProfileUpsertWithoutUserInput = {
+  update: Prisma.XOR<Prisma.ProfileUpdateWithoutUserInput, Prisma.ProfileUncheckedUpdateWithoutUserInput>
+  create: Prisma.XOR<Prisma.ProfileCreateWithoutUserInput, Prisma.ProfileUncheckedCreateWithoutUserInput>
   where?: Prisma.ProfileWhereInput
 }
 
-export type ProfileUpdateToOneWithWhereWithoutUserProfileInput = {
+export type ProfileUpdateToOneWithWhereWithoutUserInput = {
   where?: Prisma.ProfileWhereInput
-  data: Prisma.XOR<Prisma.ProfileUpdateWithoutUserProfileInput, Prisma.ProfileUncheckedUpdateWithoutUserProfileInput>
+  data: Prisma.XOR<Prisma.ProfileUpdateWithoutUserInput, Prisma.ProfileUncheckedUpdateWithoutUserInput>
 }
 
-export type ProfileUpdateWithoutUserProfileInput = {
+export type ProfileUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -460,7 +460,7 @@ export type ProfileUpdateWithoutUserProfileInput = {
   gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
 }
 
-export type ProfileUncheckedUpdateWithoutUserProfileInput = {
+export type ProfileUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -481,7 +481,7 @@ export type ProfileSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   bio?: boolean
   avatar?: boolean
   gender?: boolean
-  userProfile?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["profile"]>
 
 export type ProfileSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -493,7 +493,7 @@ export type ProfileSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   bio?: boolean
   avatar?: boolean
   gender?: boolean
-  userProfile?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["profile"]>
 
 export type ProfileSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -505,7 +505,7 @@ export type ProfileSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   bio?: boolean
   avatar?: boolean
   gender?: boolean
-  userProfile?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["profile"]>
 
 export type ProfileSelectScalar = {
@@ -521,19 +521,19 @@ export type ProfileSelectScalar = {
 
 export type ProfileOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "firstName" | "lastName" | "birthDay" | "bio" | "avatar" | "gender", ExtArgs["result"]["profile"]>
 export type ProfileInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  userProfile?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type ProfileIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  userProfile?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type ProfileIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  userProfile?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 
 export type $ProfilePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Profile"
   objects: {
-    userProfile: Prisma.$UserPayload<ExtArgs>
+    user: Prisma.$UserPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -938,7 +938,7 @@ readonly fields: ProfileFieldRefs;
  */
 export interface Prisma__ProfileClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  userProfile<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.

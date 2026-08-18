@@ -192,6 +192,8 @@ export type UserWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   sessions?: Prisma.SessionListRelationFilter
   profile?: Prisma.XOR<Prisma.ProfileNullableScalarRelationFilter, Prisma.ProfileWhereInput> | null
+  uploadedMusic?: Prisma.MusicListRelationFilter
+  playlists?: Prisma.PlaylistListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -203,6 +205,8 @@ export type UserOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   sessions?: Prisma.SessionOrderByRelationAggregateInput
   profile?: Prisma.ProfileOrderByWithRelationInput
+  uploadedMusic?: Prisma.MusicOrderByRelationAggregateInput
+  playlists?: Prisma.PlaylistOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -217,6 +221,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   sessions?: Prisma.SessionListRelationFilter
   profile?: Prisma.XOR<Prisma.ProfileNullableScalarRelationFilter, Prisma.ProfileWhereInput> | null
+  uploadedMusic?: Prisma.MusicListRelationFilter
+  playlists?: Prisma.PlaylistListRelationFilter
 }, "id" | "email" | "name">
 
 export type UserOrderByWithAggregationInput = {
@@ -251,7 +257,9 @@ export type UserCreateInput = {
   role?: $Enums.MemberRole
   createdAt?: Date | string
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
-  profile?: Prisma.ProfileCreateNestedOneWithoutUserProfileInput
+  profile?: Prisma.ProfileCreateNestedOneWithoutUserInput
+  uploadedMusic?: Prisma.MusicCreateNestedManyWithoutUploadedByInput
+  playlists?: Prisma.PlaylistCreateNestedManyWithoutOwnerInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -262,7 +270,9 @@ export type UserUncheckedCreateInput = {
   role?: $Enums.MemberRole
   createdAt?: Date | string
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
-  profile?: Prisma.ProfileUncheckedCreateNestedOneWithoutUserProfileInput
+  profile?: Prisma.ProfileUncheckedCreateNestedOneWithoutUserInput
+  uploadedMusic?: Prisma.MusicUncheckedCreateNestedManyWithoutUploadedByInput
+  playlists?: Prisma.PlaylistUncheckedCreateNestedManyWithoutOwnerInput
 }
 
 export type UserUpdateInput = {
@@ -273,7 +283,9 @@ export type UserUpdateInput = {
   role?: Prisma.EnumMemberRoleFieldUpdateOperationsInput | $Enums.MemberRole
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
-  profile?: Prisma.ProfileUpdateOneWithoutUserProfileNestedInput
+  profile?: Prisma.ProfileUpdateOneWithoutUserNestedInput
+  uploadedMusic?: Prisma.MusicUpdateManyWithoutUploadedByNestedInput
+  playlists?: Prisma.PlaylistUpdateManyWithoutOwnerNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -284,7 +296,9 @@ export type UserUncheckedUpdateInput = {
   role?: Prisma.EnumMemberRoleFieldUpdateOperationsInput | $Enums.MemberRole
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
-  profile?: Prisma.ProfileUncheckedUpdateOneWithoutUserProfileNestedInput
+  profile?: Prisma.ProfileUncheckedUpdateOneWithoutUserNestedInput
+  uploadedMusic?: Prisma.MusicUncheckedUpdateManyWithoutUploadedByNestedInput
+  playlists?: Prisma.PlaylistUncheckedUpdateManyWithoutOwnerNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -314,6 +328,11 @@ export type UserUncheckedUpdateManyInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+export type UserScalarRelationFilter = {
+  is?: Prisma.UserWhereInput
+  isNot?: Prisma.UserWhereInput
+}
+
 export type UserCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
@@ -341,21 +360,36 @@ export type UserMinOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
 }
 
-export type UserScalarRelationFilter = {
-  is?: Prisma.UserWhereInput
-  isNot?: Prisma.UserWhereInput
+export type UserCreateNestedOneWithoutUploadedMusicInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutUploadedMusicInput, Prisma.UserUncheckedCreateWithoutUploadedMusicInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutUploadedMusicInput
+  connect?: Prisma.UserWhereUniqueInput
 }
 
-export type StringFieldUpdateOperationsInput = {
-  set?: string
+export type UserUpdateOneRequiredWithoutUploadedMusicNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutUploadedMusicInput, Prisma.UserUncheckedCreateWithoutUploadedMusicInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutUploadedMusicInput
+  upsert?: Prisma.UserUpsertWithoutUploadedMusicInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutUploadedMusicInput, Prisma.UserUpdateWithoutUploadedMusicInput>, Prisma.UserUncheckedUpdateWithoutUploadedMusicInput>
+}
+
+export type UserCreateNestedOneWithoutPlaylistsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPlaylistsInput, Prisma.UserUncheckedCreateWithoutPlaylistsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPlaylistsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutPlaylistsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPlaylistsInput, Prisma.UserUncheckedCreateWithoutPlaylistsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPlaylistsInput
+  upsert?: Prisma.UserUpsertWithoutPlaylistsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutPlaylistsInput, Prisma.UserUpdateWithoutPlaylistsInput>, Prisma.UserUncheckedUpdateWithoutPlaylistsInput>
 }
 
 export type EnumMemberRoleFieldUpdateOperationsInput = {
   set?: $Enums.MemberRole
-}
-
-export type DateTimeFieldUpdateOperationsInput = {
-  set?: Date | string
 }
 
 export type UserCreateNestedOneWithoutSessionsInput = {
@@ -386,6 +420,134 @@ export type UserUpdateOneRequiredWithoutProfileNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutProfileInput, Prisma.UserUpdateWithoutProfileInput>, Prisma.UserUncheckedUpdateWithoutProfileInput>
 }
 
+export type UserCreateWithoutUploadedMusicInput = {
+  id?: string
+  email: string
+  name: string
+  password: string
+  role?: $Enums.MemberRole
+  createdAt?: Date | string
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  profile?: Prisma.ProfileCreateNestedOneWithoutUserInput
+  playlists?: Prisma.PlaylistCreateNestedManyWithoutOwnerInput
+}
+
+export type UserUncheckedCreateWithoutUploadedMusicInput = {
+  id?: string
+  email: string
+  name: string
+  password: string
+  role?: $Enums.MemberRole
+  createdAt?: Date | string
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  profile?: Prisma.ProfileUncheckedCreateNestedOneWithoutUserInput
+  playlists?: Prisma.PlaylistUncheckedCreateNestedManyWithoutOwnerInput
+}
+
+export type UserCreateOrConnectWithoutUploadedMusicInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutUploadedMusicInput, Prisma.UserUncheckedCreateWithoutUploadedMusicInput>
+}
+
+export type UserUpsertWithoutUploadedMusicInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutUploadedMusicInput, Prisma.UserUncheckedUpdateWithoutUploadedMusicInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutUploadedMusicInput, Prisma.UserUncheckedCreateWithoutUploadedMusicInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutUploadedMusicInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutUploadedMusicInput, Prisma.UserUncheckedUpdateWithoutUploadedMusicInput>
+}
+
+export type UserUpdateWithoutUploadedMusicInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMemberRoleFieldUpdateOperationsInput | $Enums.MemberRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  profile?: Prisma.ProfileUpdateOneWithoutUserNestedInput
+  playlists?: Prisma.PlaylistUpdateManyWithoutOwnerNestedInput
+}
+
+export type UserUncheckedUpdateWithoutUploadedMusicInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMemberRoleFieldUpdateOperationsInput | $Enums.MemberRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  profile?: Prisma.ProfileUncheckedUpdateOneWithoutUserNestedInput
+  playlists?: Prisma.PlaylistUncheckedUpdateManyWithoutOwnerNestedInput
+}
+
+export type UserCreateWithoutPlaylistsInput = {
+  id?: string
+  email: string
+  name: string
+  password: string
+  role?: $Enums.MemberRole
+  createdAt?: Date | string
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  profile?: Prisma.ProfileCreateNestedOneWithoutUserInput
+  uploadedMusic?: Prisma.MusicCreateNestedManyWithoutUploadedByInput
+}
+
+export type UserUncheckedCreateWithoutPlaylistsInput = {
+  id?: string
+  email: string
+  name: string
+  password: string
+  role?: $Enums.MemberRole
+  createdAt?: Date | string
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  profile?: Prisma.ProfileUncheckedCreateNestedOneWithoutUserInput
+  uploadedMusic?: Prisma.MusicUncheckedCreateNestedManyWithoutUploadedByInput
+}
+
+export type UserCreateOrConnectWithoutPlaylistsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutPlaylistsInput, Prisma.UserUncheckedCreateWithoutPlaylistsInput>
+}
+
+export type UserUpsertWithoutPlaylistsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutPlaylistsInput, Prisma.UserUncheckedUpdateWithoutPlaylistsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutPlaylistsInput, Prisma.UserUncheckedCreateWithoutPlaylistsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutPlaylistsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutPlaylistsInput, Prisma.UserUncheckedUpdateWithoutPlaylistsInput>
+}
+
+export type UserUpdateWithoutPlaylistsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMemberRoleFieldUpdateOperationsInput | $Enums.MemberRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  profile?: Prisma.ProfileUpdateOneWithoutUserNestedInput
+  uploadedMusic?: Prisma.MusicUpdateManyWithoutUploadedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutPlaylistsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumMemberRoleFieldUpdateOperationsInput | $Enums.MemberRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  profile?: Prisma.ProfileUncheckedUpdateOneWithoutUserNestedInput
+  uploadedMusic?: Prisma.MusicUncheckedUpdateManyWithoutUploadedByNestedInput
+}
+
 export type UserCreateWithoutSessionsInput = {
   id?: string
   email: string
@@ -393,7 +555,9 @@ export type UserCreateWithoutSessionsInput = {
   password: string
   role?: $Enums.MemberRole
   createdAt?: Date | string
-  profile?: Prisma.ProfileCreateNestedOneWithoutUserProfileInput
+  profile?: Prisma.ProfileCreateNestedOneWithoutUserInput
+  uploadedMusic?: Prisma.MusicCreateNestedManyWithoutUploadedByInput
+  playlists?: Prisma.PlaylistCreateNestedManyWithoutOwnerInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -403,7 +567,9 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   password: string
   role?: $Enums.MemberRole
   createdAt?: Date | string
-  profile?: Prisma.ProfileUncheckedCreateNestedOneWithoutUserProfileInput
+  profile?: Prisma.ProfileUncheckedCreateNestedOneWithoutUserInput
+  uploadedMusic?: Prisma.MusicUncheckedCreateNestedManyWithoutUploadedByInput
+  playlists?: Prisma.PlaylistUncheckedCreateNestedManyWithoutOwnerInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -429,7 +595,9 @@ export type UserUpdateWithoutSessionsInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumMemberRoleFieldUpdateOperationsInput | $Enums.MemberRole
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  profile?: Prisma.ProfileUpdateOneWithoutUserProfileNestedInput
+  profile?: Prisma.ProfileUpdateOneWithoutUserNestedInput
+  uploadedMusic?: Prisma.MusicUpdateManyWithoutUploadedByNestedInput
+  playlists?: Prisma.PlaylistUpdateManyWithoutOwnerNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -439,7 +607,9 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   password?: Prisma.StringFieldUpdateOperationsInput | string
   role?: Prisma.EnumMemberRoleFieldUpdateOperationsInput | $Enums.MemberRole
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  profile?: Prisma.ProfileUncheckedUpdateOneWithoutUserProfileNestedInput
+  profile?: Prisma.ProfileUncheckedUpdateOneWithoutUserNestedInput
+  uploadedMusic?: Prisma.MusicUncheckedUpdateManyWithoutUploadedByNestedInput
+  playlists?: Prisma.PlaylistUncheckedUpdateManyWithoutOwnerNestedInput
 }
 
 export type UserCreateWithoutProfileInput = {
@@ -450,6 +620,8 @@ export type UserCreateWithoutProfileInput = {
   role?: $Enums.MemberRole
   createdAt?: Date | string
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  uploadedMusic?: Prisma.MusicCreateNestedManyWithoutUploadedByInput
+  playlists?: Prisma.PlaylistCreateNestedManyWithoutOwnerInput
 }
 
 export type UserUncheckedCreateWithoutProfileInput = {
@@ -460,6 +632,8 @@ export type UserUncheckedCreateWithoutProfileInput = {
   role?: $Enums.MemberRole
   createdAt?: Date | string
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  uploadedMusic?: Prisma.MusicUncheckedCreateNestedManyWithoutUploadedByInput
+  playlists?: Prisma.PlaylistUncheckedCreateNestedManyWithoutOwnerInput
 }
 
 export type UserCreateOrConnectWithoutProfileInput = {
@@ -486,6 +660,8 @@ export type UserUpdateWithoutProfileInput = {
   role?: Prisma.EnumMemberRoleFieldUpdateOperationsInput | $Enums.MemberRole
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  uploadedMusic?: Prisma.MusicUpdateManyWithoutUploadedByNestedInput
+  playlists?: Prisma.PlaylistUpdateManyWithoutOwnerNestedInput
 }
 
 export type UserUncheckedUpdateWithoutProfileInput = {
@@ -496,6 +672,8 @@ export type UserUncheckedUpdateWithoutProfileInput = {
   role?: Prisma.EnumMemberRoleFieldUpdateOperationsInput | $Enums.MemberRole
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  uploadedMusic?: Prisma.MusicUncheckedUpdateManyWithoutUploadedByNestedInput
+  playlists?: Prisma.PlaylistUncheckedUpdateManyWithoutOwnerNestedInput
 }
 
 
@@ -505,10 +683,14 @@ export type UserUncheckedUpdateWithoutProfileInput = {
 
 export type UserCountOutputType = {
   sessions: number
+  uploadedMusic: number
+  playlists: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   sessions?: boolean | UserCountOutputTypeCountSessionsArgs
+  uploadedMusic?: boolean | UserCountOutputTypeCountUploadedMusicArgs
+  playlists?: boolean | UserCountOutputTypeCountPlaylistsArgs
 }
 
 /**
@@ -528,6 +710,20 @@ export type UserCountOutputTypeCountSessionsArgs<ExtArgs extends runtime.Types.E
   where?: Prisma.SessionWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountUploadedMusicArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MusicWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountPlaylistsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PlaylistWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -538,6 +734,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   createdAt?: boolean
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   profile?: boolean | Prisma.User$profileArgs<ExtArgs>
+  uploadedMusic?: boolean | Prisma.User$uploadedMusicArgs<ExtArgs>
+  playlists?: boolean | Prisma.User$playlistsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -572,6 +770,8 @@ export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = run
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   profile?: boolean | Prisma.User$profileArgs<ExtArgs>
+  uploadedMusic?: boolean | Prisma.User$uploadedMusicArgs<ExtArgs>
+  playlists?: boolean | Prisma.User$playlistsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -582,6 +782,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   objects: {
     sessions: Prisma.$SessionPayload<ExtArgs>[]
     profile: Prisma.$ProfilePayload<ExtArgs> | null
+    uploadedMusic: Prisma.$MusicPayload<ExtArgs>[]
+    playlists: Prisma.$PlaylistPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -986,6 +1188,8 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   readonly [Symbol.toStringTag]: "PrismaPromise"
   sessions<T extends Prisma.User$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   profile<T extends Prisma.User$profileArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$profileArgs<ExtArgs>>): Prisma.Prisma__ProfileClient<runtime.Types.Result.GetResult<Prisma.$ProfilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  uploadedMusic<T extends Prisma.User$uploadedMusicArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$uploadedMusicArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MusicPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  playlists<T extends Prisma.User$playlistsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$playlistsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PlaylistPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1454,6 +1658,54 @@ export type User$profileArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
    */
   include?: Prisma.ProfileInclude<ExtArgs> | null
   where?: Prisma.ProfileWhereInput
+}
+
+/**
+ * User.uploadedMusic
+ */
+export type User$uploadedMusicArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Music
+   */
+  select?: Prisma.MusicSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Music
+   */
+  omit?: Prisma.MusicOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MusicInclude<ExtArgs> | null
+  where?: Prisma.MusicWhereInput
+  orderBy?: Prisma.MusicOrderByWithRelationInput | Prisma.MusicOrderByWithRelationInput[]
+  cursor?: Prisma.MusicWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MusicScalarFieldEnum | Prisma.MusicScalarFieldEnum[]
+}
+
+/**
+ * User.playlists
+ */
+export type User$playlistsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Playlist
+   */
+  select?: Prisma.PlaylistSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Playlist
+   */
+  omit?: Prisma.PlaylistOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PlaylistInclude<ExtArgs> | null
+  where?: Prisma.PlaylistWhereInput
+  orderBy?: Prisma.PlaylistOrderByWithRelationInput | Prisma.PlaylistOrderByWithRelationInput[]
+  cursor?: Prisma.PlaylistWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PlaylistScalarFieldEnum | Prisma.PlaylistScalarFieldEnum[]
 }
 
 /**

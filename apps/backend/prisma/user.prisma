@@ -8,6 +8,8 @@ model User {
 
   sessions Session[]
   profile  Profile?
+  uploadedMusic Music[]
+  playlists Playlist[]
 }
 
 model Session {
@@ -45,5 +47,5 @@ model Profile {
   avatar    String?
   gender    Gender  @default(SEX)
 
-  userProfile User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

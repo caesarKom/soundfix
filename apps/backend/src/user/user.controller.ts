@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UserService } from './user.service';
-import { UserRegisterDto, UserUpdateDto } from './dto/user.dto'; // Pamiętaj o dodaniu UserUpdateDto do klas
+import { UserRegisterDto, UserUpdateDto } from './dto/user.dto';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';

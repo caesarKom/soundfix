@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
@@ -19,6 +19,9 @@ export class AuthService {
   ) {}
 
   async login(dto: UserLoginDto, deviceInfo: string) {
+    if (!dto || !dto.email) {
+    throw new BadRequestException('Email and password are required');
+  }
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });

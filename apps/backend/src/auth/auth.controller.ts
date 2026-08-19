@@ -9,7 +9,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import type { UserLoginDto } from '../user/dto/user.dto';
+import { UserLoginDto } from '../user/dto/user.dto';
 import type { Response } from 'express';
 
 @Controller('auth')

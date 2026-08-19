@@ -34,7 +34,6 @@ enum Gender {
   MALE
   FEMALE
   OTHER
-  SEX
 }
 
 model Profile {
@@ -45,7 +44,17 @@ model Profile {
   birthDay  String?
   bio       String?
   avatar    String?
-  gender    Gender  @default(SEX)
+  gender    Gender  @default(OTHER)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model OtpToken {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  code      String   
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("otp_tokens")
 }

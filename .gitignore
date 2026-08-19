@@ -22,6 +22,8 @@ out/
 # --- NestJS (backend) ---
 /apps/backend/dist
 /apps/backend/build
+/apps/backend/uploads/
+/apps/backend/src/generated
 
 # --- Vite (admin) ---
 /apps/admin/dist

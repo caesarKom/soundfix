@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const envSchema = z.object({
   PORT: z.string().default('3000').transform(Number),
+  FRONTEND_URL: z.string().min(1),
 
   DATABASE_URL: z.string().min(1, 'Database URL is required'),
 

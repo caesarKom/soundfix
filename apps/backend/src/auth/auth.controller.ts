@@ -3,6 +3,7 @@ import {
   Controller,
   HttpCode,
   HttpStatus,
+  Ip,
   Post,
   Req,
   Res,
@@ -20,10 +21,11 @@ export class AuthController {
   async login(
     @Body() dto: UserLoginDto,
     @Req() req: Record<string, any>,
-    @Res({ passthrough: true }) res: Response
+    @Res({ passthrough: true }) res: Response,
+    @Ip() ip: string,
   ) {
     const deviceInfo = (req.headers['user-agent'] as string) || 'unknown';
-    const tokens = await this.authService.login(dto, deviceInfo);
+    const tokens = await this.authService.login(dto, deviceInfo, ip);
 
     res.cookie('refreshToken', tokens.refreshToken, {
       httpOnly: true,
@@ -39,7 +41,8 @@ export class AuthController {
   async refresh(
     @Body('refreshToken') bodyRefreshToken: string | undefined,
     @Req() req: Record<string, any>,
-    @Res({ passthrough: true }) res: Response
+    @Res({ passthrough: true }) res: Response,
+    @Ip() ip: string,
   ) {
     const deviceInfo = (req.headers['user-agent'] as string) || 'unknown';
     const refreshToken = (bodyRefreshToken || req.cookies?.refreshToken) as string | undefined;
@@ -48,10 +51,7 @@ export class AuthController {
       throw new UnauthorizedException('Refresh token is missing');
     }
 
-    const tokens = await this.authService.refreshTokens(
-      refreshToken,
-      deviceInfo
-    );
+    const tokens = await this.authService.refreshTokens(refreshToken, deviceInfo, ip);
 
     // Refresh the cookie with a new token (Token Rotation)
     res.cookie('refreshToken', tokens.refreshToken, {

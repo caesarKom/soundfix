@@ -18,21 +18,33 @@ export class AuthService {
     private readonly config: ConfigService<EnvConfig, true>
   ) {}
 
-  async login(dto: UserLoginDto, deviceInfo: string) {
+  async login(dto: UserLoginDto, deviceInfo: string, ip: string) {
     if (!dto || !dto.email) {
     throw new BadRequestException('Email and password are required');
   }
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
+
     if (!user || !(await bcrypt.compare(dto.password, user.password))) {
       throw new UnauthorizedException('Incorect login details');
     }
 
-    return this.generateAndSaveTokens(user.id, deviceInfo);
+    // 🧹 CLEANING: Before creating a new session, we delete old, expired sessions for this user
+  await this.prisma.session.deleteMany({
+    where: {
+      userId: user.id,
+      OR: [
+        { expiresAt: { lt: new Date() } }, // Expired
+        { isRevoked: true }               // Invalidated
+      ]
+    }
+  });
+
+    return this.generateAndSaveTokens(user.id, deviceInfo, ip);
   }
 
-  async refreshTokens(refreshToken: string, deviceInfo: string) {
+  async refreshTokens(refreshToken: string, deviceInfo: string, ip: string) {
     try {
       const payload = await this.jwtService.verifyAsync(refreshToken, {
         secret: this.config.get('JWT_REFRESH_TOKEN', { infer: true }),
@@ -55,13 +67,13 @@ export class AuthService {
       // Rotate
       await this.prisma.session.delete({ where: { id: session.id } });
       // New Tokens
-      return this.generateAndSaveTokens(payload.sub as string, deviceInfo);
+      return this.generateAndSaveTokens(payload.sub as string, deviceInfo, ip);
     } catch (error) {
       throw new UnauthorizedException('Invalid refresh token');
     }
   }
 
-  private async generateAndSaveTokens(userId: string, deviceInfo: string) {
+  private async generateAndSaveTokens(userId: string, deviceInfo: string, ip: string) {
     const payload: JwtPayload = { sub: userId };
     const accessToken = await this.jwtService.signAsync(payload);
     const refreshToken = await this.jwtService.signAsync(payload, {
@@ -78,6 +90,7 @@ export class AuthService {
         userId,
         tokenHash: refreshToken,
         deviceInfo,
+        ipAddress: ip,
         expiresAt,
         updatedAt: new Date(),
       },

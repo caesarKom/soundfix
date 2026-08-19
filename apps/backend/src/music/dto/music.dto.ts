@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class CreateMusicDto {
@@ -37,4 +37,20 @@ export interface UploadedFileDto {
   mimetype: string;
   buffer: Buffer;
   size: number;
+}
+
+export class UpdateMusicDto {
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  title?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  artist?: string;
+
+  @IsOptional()
+  @IsString()
+  album?: string;
 }

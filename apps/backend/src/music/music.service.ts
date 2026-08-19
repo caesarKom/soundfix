@@ -1,17 +1,26 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { StreamableFile } from '@nestjs/common';
 import { createReadStream, existsSync } from 'fs';
 import * as fs from 'fs/promises';
 import { join, extname } from 'path';
 import { Music } from '../generated/prisma/client';
-import { CreateMusicDto, MusicListResponseDto, UploadedFileDto } from './dto/music.dto';
+import {
+  CreateMusicDto,
+  MusicListResponseDto,
+  UpdateMusicDto,
+  UploadedFileDto,
+} from './dto/music.dto';
 
 @Injectable()
 export class MusicService {
   constructor(private readonly prisma: PrismaService) {}
 
- async create(
+  async create(
     dto: CreateMusicDto,
     userId: string,
     audioFile: UploadedFileDto,
@@ -42,23 +51,23 @@ export class MusicService {
       },
     });
 
-    return newSong as Music;
+    return newSong;
   }
 
   async findAll(): Promise<MusicListResponseDto[]> {
-     const records = await this.prisma.music.findMany({
-      select: { 
-        id: true, 
-        title: true, 
-        artist: true, 
-        album: true, 
-        duration: true, 
-        coverUrl: true, 
-        playCount: true 
+    const records = await this.prisma.music.findMany({
+      select: {
+        id: true,
+        title: true,
+        artist: true,
+        album: true,
+        duration: true,
+        coverUrl: true,
+        playCount: true,
       },
     });
 
-    return records as MusicListResponseDto[]
+    return records;
   }
 
   async findOne(id: string): Promise<Music> {
@@ -72,12 +81,11 @@ export class MusicService {
     if (!song) throw new NotFoundException('Song not found');
 
     // 'uploads/music/file.mp3'
-    const filePath = join(process.cwd(), song.audioUrl as string);
+    const filePath = join(process.cwd(), song.audioUrl);
 
     if (!existsSync(filePath)) {
       throw new NotFoundException('Audio file not found on server storage');
     }
-
 
     void this.prisma.music.update({
       where: { id },
@@ -87,5 +95,103 @@ export class MusicService {
     // Create a file read stream (efficient RAM management)
     const fileStream = createReadStream(filePath);
     return new StreamableFile(fileStream);
+  }
+
+  // 📝 Editing song data (Title, artist, album, visibility)
+  async update(
+    id: string,
+    userId: string,
+    userRole: string,
+    dto: UpdateMusicDto,
+    newAudio?: UploadedFileDto,
+    newCover?: UploadedFileDto,
+  ): Promise<Music> {
+    const song = await this.findOne(id);
+
+    // Permissions: Only the owner of the song or ADMIN can edit
+    if (song.userId !== userId && userRole !== 'ADMIN') {
+      throw new ForbiddenException(
+        'You do not have permission to edit this song',
+      );
+    }
+
+    const updateData: Record<string, any> = { ...dto };
+
+    // 🔄 AUDIO REPLACEMENT
+    if (newAudio) {
+      // Delete the old file from the disk (we use a safe variable typed as string)
+      const oldAudioPath: string = join(process.cwd(), song.audioUrl);
+      try {
+        await fs.unlink(oldAudioPath);
+      } catch {
+        /* ignore the missing file*/
+      }
+
+      // Save the new audio file
+      const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+      const audioPathName = `uploads/music/${uniqueSuffix}${extname(newAudio.originalname)}`;
+      await fs.writeFile(join(process.cwd(), audioPathName), newAudio.buffer);
+
+      updateData.audioUrl = audioPathName;
+    }
+
+    // 🔄 COVER REPLACEMENT
+    if (newCover) {
+      const oldCoverPath: string = join(process.cwd(), song.coverUrl);
+      try {
+        await fs.unlink(oldCoverPath);
+      } catch {
+        /* ignore */
+      }
+
+      // Save the new cover file
+      const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+      const coverPathName = `uploads/covers/${uniqueSuffix}${extname(newCover.originalname)}`;
+      await fs.writeFile(join(process.cwd(), coverPathName), newCover.buffer);
+
+      updateData.coverUrl = coverPathName;
+    }
+
+    // Update the song in the database
+    const updatedSong = await this.prisma.music.update({
+      where: { id },
+      data: updateData,
+    });
+
+    return updatedSong;
+  }
+
+  // 🗑️ Deleting a song from the database and PHYSICALLY from the hard drive
+  async remove(id: string, userId: string, userRole: string): Promise<void> {
+    const song = await this.findOne(id);
+
+    if (song.userId !== userId && userRole !== 'ADMIN') {
+      throw new ForbiddenException(
+        'You do not have permission to delete this song',
+      );
+    }
+
+    // 1. Define full paths to files on disk
+    const audioPath = join(process.cwd(), song.audioUrl);
+    const coverPath = join(process.cwd(), song.coverUrl);
+
+    // 2. Delete the MP3 file from the disk if it physically exists
+    try {
+      await fs.unlink(audioPath);
+    } catch (error) {
+      // ignore the error if the file has already been manually deleted from the folder to avoid blocking the database
+    }
+
+    // 3. Delete the cover image from
+    try {
+      await fs.unlink(coverPath);
+    } catch (error) {
+      // Ignore
+    }
+
+    // 4. Delete the record from the database (Prisma will automatically clear the links to playlists)
+    await this.prisma.music.delete({
+      where: { id },
+    });
   }
 }

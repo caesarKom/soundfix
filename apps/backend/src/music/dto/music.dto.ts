@@ -54,3 +54,12 @@ export class UpdateMusicDto {
   @IsString()
   album?: string;
 }
+
+export interface LikedSongItem {
+  id: string;
+  title: string;
+  artist: string;
+  album: string | null;
+  duration: number;
+  coverUrl: string;
+}

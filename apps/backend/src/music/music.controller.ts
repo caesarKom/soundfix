@@ -5,7 +5,6 @@ import {
   UseGuards,
   Header,
   StreamableFile,
-  NotFoundException,
   Body,
   UploadedFiles,
   BadRequestException,
@@ -16,6 +15,7 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { MusicService } from './music.service';
@@ -33,6 +33,28 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 @Controller('music')
 export class MusicController {
   constructor(private readonly musicService: MusicService) {}
+
+  // GET /v1/music/search?q=...
+  @Get('search')
+  async searchEverything(@Query('q') query: string) {
+    return this.musicService.globalSearch(query);
+  }
+
+  //  GET /v1/music/liked
+  @Get('liked')
+  async getMyFavorites(@CurrentUser() userId: string) {
+    return this.musicService.getLikedSongs(userId);
+  }
+
+  //  Like / Unlike: POST /v1/music/like/:id
+  @Post('like/:id')
+  @HttpCode(HttpStatus.OK)
+  async toggleLike(
+    @Param('id') musicId: string,
+    @CurrentUser() userId: string,
+  ) {
+    return this.musicService.toggleLikeSong(musicId, userId);
+  }
 
   @Post()
   @UseInterceptors(

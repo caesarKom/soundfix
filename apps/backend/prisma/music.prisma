@@ -16,6 +16,7 @@ model Music {
 
   // Many-to-Many
   playlists   Playlist[]
+  likedBy     LikedSong[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -39,4 +40,22 @@ model Playlist {
   updatedAt   DateTime @updatedAt
 
   @@map("playlists")
+}
+
+model LikedSong {
+  id        String   @id @default(uuid())
+  
+  // Relationship with the user
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  // Relationship with the song
+  music     Music    @relation(fields: [musicId], references: [id], onDelete: Cascade)
+  musicId   String
+
+  createdAt DateTime @default(now())
+
+  // Security: a user can like a given song exactly once
+  @@unique([userId, musicId])
+  @@map("liked_songs")
 }

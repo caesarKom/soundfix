@@ -11,6 +11,8 @@ model User {
   profile       Profile?
   uploadedMusic Music[]
   playlists     Playlist[]
+  likedSongs    LikedSong[]
+
 }
 
 model Session {

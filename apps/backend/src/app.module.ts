@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { envSchema } from './config/env.schema';
 import { MailModule } from './mail/mail.module';
 import { MusicModule } from './music/music.module';
+import { PlaylistModule } from './playlist/playlist.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { MusicModule } from './music/music.module';
     AuthModule,
     MailModule,
     MusicModule,
+    PlaylistModule,
   ],
   controllers: [],
   providers: [PrismaService],

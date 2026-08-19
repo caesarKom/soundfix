@@ -1,15 +1,17 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { UserRegisterDto, UserUpdateDto } from './dto/user.dto';
+import { UserRegisterDto, UserUpdateDto, VerifyOtpDto } from './dto/user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly mailService: MailService) {}
 
   async register(dto: UserRegisterDto) {
     const userExists = await this.prisma.user.findFirst({
@@ -17,10 +19,21 @@ export class UserService {
     });
 
     if (userExists) {
-      throw new ConflictException(
-        'User with this email or name already exists'
-      );
+      throw new ConflictException('User with this email or name already exists');
     }
+    // OTP
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + 120); // 2 hours from now
+
+    await this.prisma.otpToken.upsert({
+      where: { email: dto.email },
+      update: { code: otpCode, expiresAt },
+      create: { email: dto.email, code: otpCode, expiresAt },
+    });
+
+    await this.mailService.sendOTP(dto.email, otpCode, dto.name);
+
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
@@ -29,10 +42,35 @@ export class UserService {
         email: dto.email,
         name: dto.name,
         password: hashedPassword,
+        isVerified: false,
       },
     });
 
-    return { id: user.id, email: user.email, name: user.name };
+    return { message: 'Verification code sent to email', email: user.email };
+  }
+
+  async verifyOtp(dto: VerifyOtpDto) {
+    const otpRecord = await this.prisma.otpToken.findUnique({
+      where: { email: dto.email },
+    });
+
+    if (!otpRecord || otpRecord.code !== dto.code || otpRecord.expiresAt < new Date()) {
+      throw new BadRequestException('Invalid or expired verification code');
+    }
+
+    // If the code is correct, we will activate the user
+    const user = await this.prisma.user.update({
+      where: { email: dto.email },
+      data: { isVerified: true },
+    });
+
+    // Delete code
+    await this.prisma.otpToken.delete({ where: { id: otpRecord.id } });
+
+    // Send welcome email
+    await this.mailService.sendWelcomeEmail(user.email, user.name);
+
+    return { message: 'Account verified successfully', status: 'SUCCESS' };
   }
 
   async findAll() {
@@ -42,6 +80,7 @@ export class UserService {
         email: true,
         name: true,
         role: true,
+        isVerified: true,
         createdAt: true,
       },
     });
@@ -55,6 +94,7 @@ export class UserService {
         email: true,
         name: true,
         role: true,
+        isVerified: true,
         createdAt: true,
       },
     });
@@ -95,7 +135,7 @@ export class UserService {
     const updatedUser = await this.prisma.user.update({
       where: { id },
       data: updateData,
-      select: { id: true, email: true, name: true, role: true },
+      select: { id: true, email: true, name: true, role: true, isVerified: true, },
     });
 
     return updatedUser;

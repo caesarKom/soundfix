@@ -1,3 +1,4 @@
+import { ClassTransformer } from 'class-transformer';
 import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class UserRegisterDto {
@@ -36,4 +37,13 @@ export class UserUpdateDto {
   @IsString()
   @MinLength(6, { message: 'Password must be at least 6 characters long' })
   password?: string;
+}
+
+export class VerifyOtpDto {
+  @IsEmail({}, { message: 'Incorrect email address format' })
+  email!: string;
+
+  @IsString()
+  @MinLength(6, { message: 'Code must be at least 6 characters long' })
+  code!: string;
 }

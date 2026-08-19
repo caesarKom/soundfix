@@ -1,15 +1,16 @@
 model User {
-  id        String     @id @default(uuid())
-  email     String     @unique
-  name  String     @unique
-  password  String
-  role      MemberRole @default(MEMBER)
-  createdAt DateTime   @default(now())
+  id         String     @id @default(uuid())
+  email      String     @unique
+  name       String     @unique
+  password   String
+  isVerified Boolean    @default(false)
+  role       MemberRole @default(MEMBER)
+  createdAt  DateTime   @default(now())
 
-  sessions Session[]
-  profile  Profile?
+  sessions      Session[]
+  profile       Profile?
   uploadedMusic Music[]
-  playlists Playlist[]
+  playlists     Playlist[]
 }
 
 model Session {
@@ -52,7 +53,7 @@ model Profile {
 model OtpToken {
   id        String   @id @default(uuid())
   email     String   @unique
-  code      String   
+  code      String
   expiresAt DateTime
   createdAt DateTime @default(now())
 

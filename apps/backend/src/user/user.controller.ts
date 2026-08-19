@@ -8,12 +8,11 @@ import {
   Param,
   Patch,
   Post,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UserService } from './user.service';
-import { UserRegisterDto, UserUpdateDto } from './dto/user.dto';
+import { UserRegisterDto, UserUpdateDto, VerifyOtpDto } from './dto/user.dto';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -27,6 +26,12 @@ export class UserController {
   async register(@Body() dto: UserRegisterDto) {
     return this.userService.register(dto);
   }
+
+  @Post('verify-otp')
+  @HttpCode(HttpStatus.OK)
+  async verifyOtp(@Body() dto: VerifyOtpDto) {
+    return this.userService.verifyOtp(dto);
+}
 
   // 👤 USER LEVEL (Logged in, manages himself)
 

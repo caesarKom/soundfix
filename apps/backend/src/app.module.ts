@@ -11,6 +11,7 @@ import { PlaylistModule } from './playlist/playlist.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { AdminModule } from './admin/admin.module';
 
 // 1. Determine base path by traversing from runtime working directory
 const getUploadsPath = (): string => {
@@ -50,6 +51,7 @@ const getUploadsPath = (): string => {
     MailModule,
     MusicModule,
     PlaylistModule,
+    AdminModule,
   ],
   controllers: [],
   providers: [PrismaService],

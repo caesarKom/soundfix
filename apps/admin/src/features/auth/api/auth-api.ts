@@ -6,6 +6,9 @@ interface TokensResponse {
   accessToken: string;
   refreshToken: string;
 }
+interface RefreshResponse {
+  accessToken: string;
+}
 
 export const authApi = {
   login: async (credentials: LoginCredentials): Promise<{ user: User; accessToken: string }> => {
@@ -32,6 +35,16 @@ export const authApi = {
       useAuthStore.getState().setAuth(null, null);
       throw error;
     }
+  },
+
+  refresh: async (): Promise<RefreshResponse> => {
+    const { data } = await apiClient.post<RefreshResponse>('/auth/refresh');
+    
+    // Dynamically update the access token in memory upon a successful silent rotation
+    const currentUser = useAuthStore.getState().user;
+    useAuthStore.getState().setAuth(currentUser, data.accessToken);
+    
+    return data;
   },
 
   getMe: async (): Promise<User> => {

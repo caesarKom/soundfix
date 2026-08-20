@@ -8,6 +8,21 @@ import { envSchema } from './config/env.schema';
 import { MailModule } from './mail/mail.module';
 import { MusicModule } from './music/music.module';
 import { PlaylistModule } from './playlist/playlist.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { existsSync } from 'fs';
+
+// 1. Determine base path by traversing from runtime working directory
+const getUploadsPath = (): string => {
+  const rootWorkspacePath = join(process.cwd(), 'uploads');
+  const backendLocalPath = join(process.cwd(), '..', '..', 'uploads');
+
+  // Verify which folder physically exists on the disk
+  if (existsSync(rootWorkspacePath)) {
+    return rootWorkspacePath;
+  }
+  return backendLocalPath;
+};
 
 @Module({
   imports: [
@@ -24,6 +39,10 @@ import { PlaylistModule } from './playlist/playlist.module';
         }
         return res.data as Record<string, unknown>;
       },
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: getUploadsPath(),
+      serveRoot: '/uploads',
     }),
     PrismaModule,
     UserModule,

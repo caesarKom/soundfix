@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
-//import { json, urlencoded } from 'express';
+import { json, urlencoded } from 'express';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EnvConfig } from './config/env.schema';
@@ -17,8 +17,8 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.use(cookieParser());
 
-//  app.use(json({ limit: '50mb' }));
-//  app.use(urlencoded({ extended: true, limit: '50mb' }));
+  app.use(json({ limit: '50mb' }));
+  app.use(urlencoded({ extended: true, limit: '50mb' }));
 
   // CORS config
   app.enableCors({

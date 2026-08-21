@@ -1,6 +1,9 @@
 import React, { useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { musicApi } from "../api/music-api.ts"
+import type { Track } from "../types/music.ts"
+import { AdminModal } from "../../../components/admin-modal.tsx"
+import { TrackEditForm } from "./track-edit-form.tsx"
 
 export function MusicPage() {
   const IMAGE_URL = import.meta.env.VITE_IMAGE_URL
@@ -15,6 +18,9 @@ export function MusicPage() {
   const [audioFile, setAudioFile] = useState<File | null>(null)
   const [coverFile, setCoverFile] = useState<File | null>(null)
   const [validationError, setValidationError] = useState<string | null>(null)
+
+  const [selectedTrackForEdit, setSelectedTrackForEdit] = useState<Track | null>(null);
+
 
   // 1. Query for fetching music catalog
   const {
@@ -110,7 +116,7 @@ export function MusicPage() {
     }
   }
 
-  return (
+  return ( <>
     <div className="space-y-10">
       <div>
         <h1 className="text-3xl font-black tracking-tight text-white">
@@ -312,6 +318,12 @@ export function MusicPage() {
                           {track.playCount.toLocaleString()}
                         </td>
                         <td className="py-3.5 px-5 text-right">
+                          <button 
+                            onClick={() => setSelectedTrackForEdit(track)}
+                            className="text-xs font-bold text-slate-500 hover:text-green-400 transition-colors px-2 py-1 rounded hover:bg-green-950/20"
+                            >
+                              Edit
+                            </button>
                           <button
                             onClick={() => handleDelete(track.id, track.title)}
                             disabled={deleteMutation.isPending}
@@ -339,5 +351,19 @@ export function MusicPage() {
         </section>
       </div>
     </div>
+
+    <AdminModal
+  isOpen={!!selectedTrackForEdit} 
+  onClose={() => setSelectedTrackForEdit(null)} 
+  title="Modify Audio Track"
+>
+  {selectedTrackForEdit && (
+    <TrackEditForm
+      track={selectedTrackForEdit} 
+      onSuccess={() => setSelectedTrackForEdit(null)} 
+    />
+  )}
+</AdminModal>
+</>
   )
 }

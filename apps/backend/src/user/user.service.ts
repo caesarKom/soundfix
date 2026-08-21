@@ -43,6 +43,7 @@ export class UserService {
         name: dto.name,
         password: hashedPassword,
         isVerified: false,
+        profile: { create: {} },
       },
     });
 
@@ -82,6 +83,17 @@ export class UserService {
         role: true,
         isVerified: true,
         createdAt: true,
+        profile: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            birthDay: true,
+            bio: true,
+            avatar: true,
+            gender: true,
+          },
+        },
       },
     });
   }
@@ -96,6 +108,17 @@ export class UserService {
         role: true,
         isVerified: true,
         createdAt: true,
+        profile: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            birthDay: true,
+            bio: true,
+            avatar: true,
+            gender: true,
+          },
+        },
       },
     });
 
@@ -106,23 +129,34 @@ export class UserService {
     return user;
   }
 
-  async update(id: string, dto: UserUpdateDto) {
+ async update(id: string, dto: UserUpdateDto) {
     await this.findOne(id);
 
-    const updateData: Record<string, any> = { ...dto };
+    const { profile, ...userFields } = dto as UserUpdateDto & {
+      profile?: {
+        firstName?: string;
+        lastName?: string;
+        birthDay?: string;
+        bio?: string;
+        avatar?: string;
+        gender?: 'MALE' | 'FEMALE' | 'OTHER';
+      };
+    };
 
-    if (dto.password) {
-      updateData.password = await bcrypt.hash(dto.password, 10);
+    const updateData: Record<string, any> = { ...userFields };
+
+    if (userFields.password) {
+      updateData.password = await bcrypt.hash(userFields.password, 10);
     }
 
-    // Checking the uniqueness of the email/name if they are changed
-    if (dto.email || dto.name) {
+    // Sprawdzenie unikalności email/name jeśli są zmieniane
+    if (userFields.email || userFields.name) {
       const conflictUser = await this.prisma.user.findFirst({
         where: {
           id: { not: id },
           OR: [
-            ...(dto.email ? [{ email: dto.email }] : []),
-            ...(dto.name ? [{ name: dto.name }] : []),
+            ...(userFields.email ? [{ email: userFields.email }] : []),
+            ...(userFields.name ? [{ name: userFields.name }] : []),
           ],
         },
       });
@@ -132,10 +166,37 @@ export class UserService {
       }
     }
 
+    // If a profile object comes into the DTO, we do an upsert immediately in the same query
+    if (profile) {
+      updateData.profile = {
+        upsert: {
+          create: { ...profile },
+          update: { ...profile },
+        },
+      };
+    }
+
     const updatedUser = await this.prisma.user.update({
       where: { id },
       data: updateData,
-      select: { id: true, email: true, name: true, role: true, isVerified: true, },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        isVerified: true,
+        profile: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            birthDay: true,
+            bio: true,
+            avatar: true,
+            gender: true,
+          },
+        },
+      },
     });
 
     return updatedUser;

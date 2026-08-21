@@ -14,6 +14,10 @@ export class CreateMusicDto {
   @IsOptional()
   album?: string;
 
+  @IsString()
+  @IsOptional()
+  mimeType?: string;
+
   @IsNumber()
   @IsNotEmpty()
   @Transform(({ value }) => Number(value)) // 👈 Converts a string from multipart to number
@@ -28,6 +32,7 @@ export interface MusicListResponseDto {
   duration: number;
   coverUrl: string;
   playCount: number;
+  mimeType: string;
 }
 
 export interface UploadedFileDto {
@@ -37,6 +42,7 @@ export interface UploadedFileDto {
   mimetype: string;
   buffer: Buffer;
   size: number;
+  mimeType: string;
 }
 
 export class UpdateMusicDto {
@@ -53,6 +59,10 @@ export class UpdateMusicDto {
   @IsOptional()
   @IsString()
   album?: string;
+
+  @IsString()
+  @IsOptional()
+  mimeType?: string;
 }
 
 export interface LikedSongItem {

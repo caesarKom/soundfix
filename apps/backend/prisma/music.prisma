@@ -1,57 +1,58 @@
 model Music {
-  id          String   @id @default(uuid())
-  title       String
-  artist      String   
-  album       String? 
-  duration    Int   
-  
-  audioUrl    String   
-  coverUrl    String  
-  
-  playCount   Int      @default(0)
-  isPublic    Boolean  @default(true)
-  
-  uploadedBy  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      String
+  id       String  @id @default(uuid())
+  title    String
+  artist   String
+  album    String?
+  duration Int
+
+  audioUrl String
+  coverUrl String
+
+  playCount Int     @default(0)
+  isPublic  Boolean @default(true)
+  mimeType  String  @default("audio/mpeg")
+
+  uploadedBy User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
 
   // Many-to-Many
-  playlists   Playlist[]
-  likedBy     LikedSong[]
+  playlists Playlist[]
+  likedBy   LikedSong[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("music") // Name of table in the database
 }
 
 model Playlist {
-  id          String   @id @default(uuid())
+  id          String  @id @default(uuid())
   name        String
   description String?
-  coverUrl    String? 
-  isPrivate   Boolean  @default(false)
+  coverUrl    String?
+  isPrivate   Boolean @default(false)
 
-  owner       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      String
+  owner  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
 
-  songs       Music[]
+  songs Music[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("playlists")
 }
 
 model LikedSong {
-  id        String   @id @default(uuid())
-  
+  id String @id @default(uuid())
+
   // Relationship with the user
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
 
   // Relationship with the song
-  music     Music    @relation(fields: [musicId], references: [id], onDelete: Cascade)
-  musicId   String
+  music   Music  @relation(fields: [musicId], references: [id], onDelete: Cascade)
+  musicId String
 
   createdAt DateTime @default(now())
 

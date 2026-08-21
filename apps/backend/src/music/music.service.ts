@@ -49,6 +49,7 @@ export class MusicService {
         audioUrl: audioPathName,
         coverUrl: coverPathName,
         userId: userId,
+        mimeType: audioFile.mimetype,
       },
     });
 
@@ -65,6 +66,7 @@ export class MusicService {
         duration: true,
         coverUrl: true,
         playCount: true,
+        mimeType: true,
       },
     });
 
@@ -196,39 +198,79 @@ export class MusicService {
     });
   }
 
-  // 
+  //
   // Like/Unlike song switch (Like/Unlike in one method)
   //
-async toggleLikeSong(musicId: string, userId: string): Promise<{ liked: boolean }> {
-  // check whether the song exists at all
-  const song = await this.prisma.music.findUnique({ where: { id: musicId } });
-  if (!song) throw new NotFoundException('Song not found');
+  async toggleLikeSong(
+    musicId: string,
+    userId: string,
+  ): Promise<{ liked: boolean }> {
+    // check whether the song exists at all
+    const song = await this.prisma.music.findUnique({ where: { id: musicId } });
+    if (!song) throw new NotFoundException('Song not found');
 
-  const existingLike = await this.prisma.likedSong.findUnique({
-    where: {
-      userId_musicId: { userId, musicId },
-    },
-  });
+    const existingLike = await this.prisma.likedSong.findUnique({
+      where: {
+        userId_musicId: { userId, musicId },
+      },
+    });
 
-  if (existingLike) {
-    await this.prisma.likedSong.delete({
-      where: { id: existingLike.id },
-    });
-    return { liked: false };
-  } else {
-    await this.prisma.likedSong.create({
-      data: { userId, musicId },
-    });
-    return { liked: true };
+    if (existingLike) {
+      await this.prisma.likedSong.delete({
+        where: { id: existingLike.id },
+      });
+      return { liked: false };
+    } else {
+      await this.prisma.likedSong.create({
+        data: { userId, musicId },
+      });
+      return { liked: true };
+    }
   }
-}
 
+  async getLikedSongs(userId: string): Promise<LikedSongItem[]> {
+    const likedRecords = await this.prisma.likedSong.findMany({
+      where: { userId },
+      include: {
+        music: {
+          select: {
+            id: true,
+            title: true,
+            artist: true,
+            album: true,
+            duration: true,
+            coverUrl: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
 
-async getLikedSongs(userId: string): Promise<LikedSongItem[]> {
-  const likedRecords = await this.prisma.likedSong.findMany({
-    where: { userId },
-    include: {
-      music: {
+    const songs: LikedSongItem[] = likedRecords.map(
+      (record): LikedSongItem => record.music,
+    );
+
+    return songs;
+  }
+
+  // 3. 🔍 Search Global
+  async globalSearch(query: string) {
+    if (!query || query.trim() === '') {
+      return { songs: [], playlists: [] };
+    }
+
+    const searchString = query.trim();
+
+    // search in parallel in songs and public playlists (high efficiency)
+    const [songs, playlists] = await Promise.all([
+      // Search for songs by title or artist
+      this.prisma.music.findMany({
+        where: {
+          OR: [
+            { title: { contains: searchString, mode: 'insensitive' } },
+            { artist: { contains: searchString, mode: 'insensitive' } },
+          ],
+        },
         select: {
           id: true,
           title: true,
@@ -237,64 +279,26 @@ async getLikedSongs(userId: string): Promise<LikedSongItem[]> {
           duration: true,
           coverUrl: true,
         },
-      },
-    },
-    orderBy: { createdAt: 'desc' },
-  });
+        take: 20, // Performance Score Limit
+      }),
 
-  const songs: LikedSongItem[] = likedRecords.map(
-    (record): LikedSongItem => record.music
-  );
+      // Searching for public playlists by name
+      this.prisma.playlist.findMany({
+        where: {
+          name: { contains: searchString, mode: 'insensitive' },
+          isPrivate: false, // Only public playlists
+        },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          coverUrl: true,
+          _count: { select: { songs: true } },
+        },
+        take: 10,
+      }),
+    ]);
 
-  return songs;
-}
-
-// 3. 🔍 Search Global
-async globalSearch(query: string) {
-  if (!query || query.trim() === '') {
-    return { songs: [], playlists: [] };
+    return { songs, playlists };
   }
-
-  const searchString = query.trim();
-
-  // search in parallel in songs and public playlists (high efficiency)
-  const [songs, playlists] = await Promise.all([
-    // Search for songs by title or artist
-    this.prisma.music.findMany({
-      where: {
-        OR: [
-          { title: { contains: searchString, mode: 'insensitive' } },
-          { artist: { contains: searchString, mode: 'insensitive' } },
-        ],
-      },
-      select: {
-        id: true,
-        title: true,
-        artist: true,
-        album: true,
-        duration: true,
-        coverUrl: true,
-      },
-      take: 20, // Performance Score Limit
-    }),
-
-    // Searching for public playlists by name
-    this.prisma.playlist.findMany({
-      where: {
-        name: { contains: searchString, mode: 'insensitive' },
-        isPrivate: false, // Only public playlists
-      },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        coverUrl: true,
-        _count: { select: { songs: true } },
-      },
-      take: 10,
-    }),
-  ]);
-
-  return { songs, playlists };
-}
 }

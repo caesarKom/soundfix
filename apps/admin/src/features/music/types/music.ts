@@ -8,6 +8,7 @@ export interface Track {
   coverUrl: string | null;
   playCount: number;
   isPublic: boolean;
+  mimeType: string;
   userId: string;
 }
 

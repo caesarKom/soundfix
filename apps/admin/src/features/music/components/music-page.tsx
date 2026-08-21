@@ -17,6 +17,11 @@ export function MusicPage() {
   const [isUploadOpen, setIsUploadOpen] = useState(false)
   const [editingTrack, setEditingTrack] = useState<Track | null>(null)
 
+  // Play Track
+  const [activePlayingTrack, setActivePlayingTrack] = useState<Track | null>(
+    null,
+  )
+
   const {
     data: tracks,
     isLoading,
@@ -167,10 +172,15 @@ export function MusicPage() {
                             {track.playCount.toLocaleString()}
                           </td>
                           {/* ACTIONS */}
-                          
+
                           <td className="py-3.5 px-5 text-right flex items-center justify-end gap-3 h-full min-w-[320px]">
-                            {/* NEW INTERACTIVE MEDIA PLAYER PREVIEW */}
-                            <MediaPreviewPlayer trackId={track.id} audioUrl={track.audioUrl} />
+                            <button
+                              onClick={() => setActivePlayingTrack(track)}
+                              className="w-8 h-8 rounded-full bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 flex items-center justify-center border border-emerald-500/20 hover:border-emerald-500 transition-all font-bold text-xs"
+                              title="Listen to stream"
+                            >
+                              ▶
+                            </button>
 
                             <div className="flex gap-1.5">
                               <button
@@ -257,6 +267,20 @@ export function MusicPage() {
           />
         )}
       </AdminModal>
+
+      {/* Dynamic Media Player Streaming Modal */}
+<AdminModal 
+  isOpen={!!activePlayingTrack} 
+  onClose={() => setActivePlayingTrack(null)} 
+  title={`Streaming: ${activePlayingTrack?.title || ''}`}
+>
+  {activePlayingTrack && (
+    <MediaPreviewPlayer 
+      trackId={activePlayingTrack.id} 
+      mimeType={activePlayingTrack.mimeType} 
+    />
+  )}
+</AdminModal>
     </div>
   )
 }

@@ -8,6 +8,14 @@ export const musicApi = {
     return data;
   },
 
+  // Stream music
+  fetchTrackBlob: async (trackId: string): Promise<string> => {
+  const response = await apiClient.get(`/music/stream/${trackId}`, {
+    responseType: 'blob',
+  });
+  return URL.createObjectURL(response.data);
+},
+
   // Upload a new track using Multipart/Form-Data
   create: async (dto: CreateTrackDto): Promise<Track> => {
     const formData = new FormData();

@@ -3,7 +3,6 @@ import {
   Get,
   Param,
   UseGuards,
-  Header,
   StreamableFile,
   Body,
   UploadedFiles,
@@ -16,6 +15,8 @@ import {
   HttpCode,
   HttpStatus,
   Query,
+  Headers,
+  Res,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { MusicService } from './music.service';
@@ -28,6 +29,7 @@ import {
 import { Music } from '../generated/prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import type { Response } from 'express';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('music')
@@ -90,12 +92,15 @@ export class MusicController {
   }
 
   // 🎧 Safe streaming audio
-  @Get('stream/:id')
-  @Header('Content-Type', 'audio/mpeg') // Inform the player (e.g. on the phone) that it is an MP3 file
-  @Header('Accept-Ranges', 'bytes') // Allows you to rewind the song (jump to a specific moment)
-  async streamMusic(@Param('id') id: string): Promise<StreamableFile> {
-    return this.musicService.getAudioStream(id);
-  }
+@Get('stream/:id')
+@UseGuards(AuthGuard('jwt'))
+async streamMusic(
+  @Param('id') id: string,
+  @Headers('range') range: string | undefined,
+  @Res({ passthrough: true }) res: Response,
+): Promise<StreamableFile> {
+  return this.musicService.getAudioStream(id, range, res);
+}
 
   @Patch(':id')
   @UseInterceptors(

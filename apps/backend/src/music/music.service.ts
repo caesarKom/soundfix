@@ -3,9 +3,10 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { PrismaService } from '../prisma/prisma.service';
 import { StreamableFile } from '@nestjs/common';
-import { createReadStream, existsSync } from 'fs';
+import { createReadStream, existsSync, statSync } from 'fs';
 import * as fs from 'fs/promises';
 import { join, extname } from 'path';
 import { Music } from '../generated/prisma/client';
@@ -79,26 +80,52 @@ export class MusicService {
     return song;
   }
 
-  async getAudioStream(id: string): Promise<StreamableFile> {
-    const song = await this.prisma.music.findUnique({ where: { id } });
-    if (!song) throw new NotFoundException('Song not found');
+  async getAudioStream(
+  id: string,
+  range: string | undefined,
+  res: Response,
+): Promise<StreamableFile> {
+  const song = await this.prisma.music.findUnique({ where: { id } });
+  if (!song) throw new NotFoundException('Song not found');
 
-    // 'uploads/music/file.mp3'
-    const filePath = join(process.cwd(), song.audioUrl);
+  const filePath = join(process.cwd(), song.audioUrl);
+  if (!existsSync(filePath)) {
+    throw new NotFoundException('Audio file not found on server storage');
+  }
 
-    if (!existsSync(filePath)) {
-      throw new NotFoundException('Audio file not found on server storage');
-    }
+  const stat = statSync(filePath);
+  const fileSize = stat.size;
 
-    void this.prisma.music.update({
-      where: { id },
-      data: { playCount: { increment: 1 } },
+  void this.prisma.music.update({
+    where: { id },
+    data: { playCount: { increment: 1 } },
+  });
+
+  if (range) {
+    const [startStr, endStr] = range.replace(/bytes=/, '').split('-');
+    const start = parseInt(startStr, 10);
+    const end = endStr ? parseInt(endStr, 10) : fileSize - 1;
+    const chunkSize = end - start + 1;
+
+    res.status(206);
+    res.set({
+      'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+      'Accept-Ranges': 'bytes',
+      'Content-Length': chunkSize,
+      'Content-Type': song.mimeType, // realny mimeType, nie sztywno audio/mpeg
     });
 
-    // Create a file read stream (efficient RAM management)
-    const fileStream = createReadStream(filePath);
-    return new StreamableFile(fileStream);
+    return new StreamableFile(createReadStream(filePath, { start, end }));
   }
+
+  res.set({
+    'Content-Length': fileSize,
+    'Content-Type': song.mimeType,
+    'Accept-Ranges': 'bytes',
+  });
+
+  return new StreamableFile(createReadStream(filePath));
+}
 
   // 📝 Editing song data (Title, artist, album, visibility)
   async update(

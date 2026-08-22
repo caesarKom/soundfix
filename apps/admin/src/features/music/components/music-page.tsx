@@ -5,7 +5,7 @@ import { AdminModal } from "../../../components/admin-modal.tsx"
 import { TrackUploadForm } from "./track-upload-form.tsx"
 import { TrackEditForm } from "./track-edit-form.tsx"
 import type { Track } from "../types/music.ts"
-import { MediaPreviewPlayer } from "./media-preview-player.tsx"
+import TrackRow from "./media-preview-player.tsx"
 
 export function MusicPage() {
   const queryClient = useQueryClient()
@@ -16,11 +16,6 @@ export function MusicPage() {
   // Modals visibility triggers
   const [isUploadOpen, setIsUploadOpen] = useState(false)
   const [editingTrack, setEditingTrack] = useState<Track | null>(null)
-
-  // Play Track
-  const [activePlayingTrack, setActivePlayingTrack] = useState<Track | null>(
-    null,
-  )
 
   const {
     data: tracks,
@@ -174,13 +169,7 @@ export function MusicPage() {
                           {/* ACTIONS */}
 
                           <td className="py-3.5 px-5 text-right flex items-center justify-end gap-3 h-full min-w-[320px]">
-                            <button
-                              onClick={() => setActivePlayingTrack(track)}
-                              className="w-8 h-8 rounded-full bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 flex items-center justify-center border border-emerald-500/20 hover:border-emerald-500 transition-all font-bold text-xs"
-                              title="Listen to stream"
-                            >
-                              ▶
-                            </button>
+                            <TrackRow track={track} />
 
                             <div className="flex gap-1.5">
                               <button
@@ -268,19 +257,6 @@ export function MusicPage() {
         )}
       </AdminModal>
 
-      {/* Dynamic Media Player Streaming Modal */}
-<AdminModal 
-  isOpen={!!activePlayingTrack} 
-  onClose={() => setActivePlayingTrack(null)} 
-  title={`Streaming: ${activePlayingTrack?.title || ''}`}
->
-  {activePlayingTrack && (
-    <MediaPreviewPlayer 
-      trackId={activePlayingTrack.id} 
-      mimeType={activePlayingTrack.mimeType} 
-    />
-  )}
-</AdminModal>
     </div>
   )
 }

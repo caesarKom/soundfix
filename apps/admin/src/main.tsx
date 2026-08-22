@@ -4,6 +4,8 @@ import App from './App.tsx'
 import './index.css'
 import { authApi } from './features/auth/api/auth-api.ts';
 import { useAuthStore } from './store/useAuthStore.ts';
+import { AudioEngine } from './components/Player/AudioEngine.tsx';
+import { PlayerBar } from './components/Player/PlayerBar.tsx';
 
 (async () => {
   try {
@@ -25,6 +27,8 @@ import { useAuthStore } from './store/useAuthStore.ts';
     createRoot(document.getElementById('root')!).render(
       <StrictMode>
         <App />
+        <AudioEngine />
+      <PlayerBar />
       </StrictMode>
     );
   }

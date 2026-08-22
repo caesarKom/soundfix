@@ -13,7 +13,9 @@ async function bootstrap() {
   // Global prefixs /v1
   app.setGlobalPrefix('/v1');
 
-  app.use(helmet());
+  app.use(helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  }));
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.use(cookieParser());
 
@@ -31,6 +33,7 @@ async function bootstrap() {
         return callback(null, true);
       if (
         origin.startsWith('http://localhost') ||
+        origin.startsWith('http://localhost:5173') ||
         origin.startsWith('http://127.0.0.1') ||
         origin.startsWith('http://173.249.31.149')
       ) {

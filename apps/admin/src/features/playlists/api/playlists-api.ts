@@ -22,13 +22,13 @@ export const playlistsApi = {
 
   // Link a track to a playlist
   addTrack: async (playlistId: string, trackId: string): Promise<void> => {
-    await apiClient.post(`/playlists/${playlistId}/songs`, { trackId });
+    await apiClient.post(`/playlists/${playlistId}/songs`, { songId: trackId });
   },
 
   // Unlink a track from a playlist
   removeTrack: async (playlistId: string, trackId: string): Promise<void> => {
     // Usually NestJS takes trackId in body or query depending on implementation
-    await apiClient.delete(`/playlists/${playlistId}/songs`, { data: { trackId } });
+    await apiClient.delete(`/playlists/${playlistId}/songs`, { data: { songId: trackId } });
   },
 
   // Permanently delete a playlist

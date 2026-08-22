@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { playlistsApi } from '../api/playlists-api.ts';
+import { AdminModal } from '../../../components/admin-modal.tsx';
+import { PlaylistTrackManager } from './playlist-track-manager.tsx';
+import type { AdminPlaylist } from '../types/playlists.ts';
 
 export function PlaylistsPage() {
   const queryClient = useQueryClient();
@@ -11,6 +14,9 @@ export function PlaylistsPage() {
   const [isPrivate, setIsPrivate] = useState(false);
   const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const [trackManagerPlaylist, setTrackManagerPlaylist] = useState<AdminPlaylist | null>(null);
+
 
   // 1. Query for fetching all global playlists
   const { data: playlists, isLoading, isError } = useQuery({
@@ -87,6 +93,7 @@ export function PlaylistsPage() {
   };
 
   return (
+    <>
     <div className="space-y-10">
       <div>
         <h1 className="text-3xl font-black tracking-tight text-white">Application Playlists</h1>
@@ -233,6 +240,15 @@ export function PlaylistsPage() {
                 <h3 className="text-md font-bold text-white tracking-tight">
                   Track Composition: <span className="text-emerald-400">{activePlaylist?.name}</span>
                 </h3>
+
+                <button
+  onClick={() => setTrackManagerPlaylist(activePlaylist)}
+  className="px-2.5 py-1 text-xs font-bold bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 border border-emerald-500/20 rounded-md transition-all mr-2"
+>
+  ⚙ Manage Playlist Composition
+</button>
+
+
                 <button 
                   onClick={() => setSelectedPlaylistId(null)}
                   className="text-xs text-slate-400 hover:text-white font-bold"
@@ -273,5 +289,20 @@ export function PlaylistsPage() {
         </section>
       </div>
     </div>
+
+    <AdminModal
+  isOpen={!!trackManagerPlaylist}
+  onClose={() => setTrackManagerPlaylist(null)}
+  title={`Assign Tracks to: ${trackManagerPlaylist?.name || ''}`}
+>
+  {trackManagerPlaylist && (
+    <PlaylistTrackManager
+      playlist={trackManagerPlaylist}
+      onClose={() => setTrackManagerPlaylist(null)}
+    />
+  )}
+</AdminModal>
+
+</>
   );
 }

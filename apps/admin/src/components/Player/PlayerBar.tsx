@@ -21,7 +21,7 @@ export function PlayerBar() {
           <img
             src={`${IMAGE_URL}/${track.coverUrl}`}
             alt={track.title}
-            className="w-10 h-10 sm:w-12 sm:h-12 rounded object-cover flex-shrink-0 bg-slate-800"
+            className="w-10 h-10 sm:w-12 sm:h-12 rounded object-cover shrink-0 bg-slate-800"
           />
           <div className="min-w-0 hidden xs:block">
             <p className="text-sm font-semibold text-white truncate">

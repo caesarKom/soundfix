@@ -48,12 +48,12 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 flex items-center justify-center p-4 font-sans text-slate-100">
+    <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-emerald-950 flex items-center justify-center p-4 font-sans text-slate-100">
       <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-8 w-full max-w-md shadow-2xl border border-slate-800/80 space-y-6">
         
         {/* Decorative Top Branding Shield Header */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-full mb-2 shadow-lg shadow-emerald-500/10">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-linear-to-br from-emerald-400 to-teal-600 rounded-full mb-2 shadow-lg shadow-emerald-500/10">
             <Shield className="w-8 h-8 text-slate-950 font-black" />
           </div>
           <h1 className="text-3xl font-black tracking-tight text-white">

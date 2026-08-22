@@ -24,6 +24,13 @@ export const playlistsApi = {
   return data;
 },
 
+update: async ({ id, formData }: { id: string; formData: FormData }): Promise<AdminPlaylist> => {
+  const { data } = await apiClient.patch<AdminPlaylist>(`/playlists/${id}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+},
+
   // Link a track to a playlist
   addTrack: async (playlistId: string, trackId: string): Promise<void> => {
     await apiClient.post(`/playlists/${playlistId}/songs`, { songId: trackId });

@@ -6,15 +6,20 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Req,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { PlaylistService } from './playlist.service';
-import { CreatePlaylistDto, ManagePlaylistSongsDto } from './dto/playlist.dto';
+import { CreatePlaylistDto, ManagePlaylistSongsDto, UpdatePlaylistDto } from './dto/playlist.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Playlist } from '../generated/prisma/client';
+import type { UploadedFileDto } from '../music/dto/music.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('playlists')
@@ -22,11 +27,13 @@ export class PlaylistController {
   constructor(private readonly playlistService: PlaylistService) {}
 
   @Post()
+  @UseInterceptors(FileInterceptor('cover'))
   async create(
     @Body() dto: CreatePlaylistDto,
     @CurrentUser() userId: string,
+    @UploadedFile() coverFile?: UploadedFileDto,
   ): Promise<Playlist> {
-    return this.playlistService.create(dto, userId);
+    return this.playlistService.create(dto, userId, coverFile);
   }
 
   @Get() // GET /v1/playlists
@@ -55,6 +62,18 @@ export class PlaylistController {
     @Body() dto: ManagePlaylistSongsDto,
   ): Promise<void> {
     await this.playlistService.addSong(id, userId, dto);
+  }
+
+   @Patch(':id')
+  @UseInterceptors(FileInterceptor('cover'))
+  async update(
+    @Param('id') id: string,
+    @CurrentUser() userId: string,
+    @CurrentUser('role') userRole: string,
+    @Body() dto: UpdatePlaylistDto,
+    @UploadedFile() newCoverFile?: UploadedFileDto,
+  ) {
+    return this.playlistService.update(id, userId, userRole, dto, newCoverFile);
   }
 
   @Delete(':id/songs')

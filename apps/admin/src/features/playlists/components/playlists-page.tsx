@@ -11,7 +11,7 @@ export function PlaylistsPage() {
   // Form & Selection states
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
-  const [isPrivate, setIsPrivate] = useState(false)
+  const [isPrivate, setIsPrivate] = useState<boolean>(false)
   const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(
     null,
   )
@@ -99,8 +99,9 @@ export function PlaylistsPage() {
     formData.append("name", name)
     formData.append("description", description)
     formData.append("isPrivate", String(isPrivate))
+
     if (coverFile) {
-      formData.append("coverUrl", coverFile) // Injected file field binary
+      formData.append("cover", coverFile) // Injected file field binary
     }
 
     // Execute our multipart handler
@@ -349,7 +350,7 @@ export function PlaylistsPage() {
                   </h3>
 
                   <button
-                    onClick={() => setTrackManagerPlaylist(activePlaylist)}
+                    onClick={() => setTrackManagerPlaylist(activePlaylist || null)}
                     className="px-2.5 py-1 text-xs font-bold bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 border border-emerald-500/20 rounded-md transition-all mr-2"
                   >
                     ⚙ Manage Playlist Composition

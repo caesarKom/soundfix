@@ -1,22 +1,36 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreatePlaylistDto, ManagePlaylistSongsDto } from './dto/playlist.dto';
+import * as fs from 'fs/promises';
+import { join, extname } from 'path';
+import { CreatePlaylistDto, ManagePlaylistSongsDto, UpdatePlaylistDto } from './dto/playlist.dto';
 import { Playlist } from '../generated/prisma/client';
+import { UploadedFileDto } from '../music/dto/music.dto';
 
 @Injectable()
 export class PlaylistService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(dto: CreatePlaylistDto, userId: string): Promise<Playlist> {
-    const playlist = await this.prisma.playlist.create({
+  async create(dto: CreatePlaylistDto, userId: string, coverFile?: UploadedFileDto) {
+    let coverPathName: string | null = null;
+
+    if (coverFile) {
+      const uploadCoverDir = join(process.cwd(), 'uploads', 'playlists');
+      await fs.mkdir(uploadCoverDir, { recursive: true });
+
+      const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+      coverPathName = `uploads/playlists/${uniqueSuffix}${extname(coverFile.originalname)}`;
+      await fs.writeFile(join(process.cwd(), coverPathName), coverFile.buffer);
+    }
+
+    return this.prisma.playlist.create({
       data: {
         name: dto.name,
         description: dto.description || null,
-        isPrivate: dto.isPrivate ?? false,
+        isPrivate: dto.isPrivate,
+        coverUrl: coverPathName,
         userId: userId,
       },
     });
-    return playlist;
   }
 
   async findOne(id: string, userId: string, userRole: string): Promise<any> {
@@ -83,16 +97,75 @@ export class PlaylistService {
     });
   }
 
+  // Update playlist
+  async update(
+    id: string, 
+    userId: string, 
+    userRole: string, 
+    dto: UpdatePlaylistDto, 
+    newCover?: UploadedFileDto
+  ) {
+    const playlist = await this.findOne(id, userId, userRole);
+
+    if (playlist.userId !== userId && userRole !== 'ADMIN') {
+      throw new ForbiddenException('You do not have permission to edit this playlist');
+    }
+
+    const updateData: Record<string, any> = {
+      name: dto.name,
+      description: dto.description,
+    };
+    
+    if (dto.isPrivate !== undefined) {
+      updateData.isPrivate = 'false';
+    }
+
+    if (newCover) {
+      if (playlist.coverUrl) {
+        try {
+          const oldCoverPath: string = join(process.cwd(), playlist.coverUrl);
+          await fs.unlink(oldCoverPath);
+        } catch {
+          /* ignore the missing file*/
+        }
+      }
+
+      const uploadCoverDir = join(process.cwd(), 'uploads', 'playlists');
+      await fs.mkdir(uploadCoverDir, { recursive: true });
+
+      const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+      const coverPathName = `uploads/playlists/${uniqueSuffix}${extname(newCover.originalname)}`;
+      await fs.writeFile(join(process.cwd(), coverPathName), newCover.buffer);
+
+      updateData.coverUrl = coverPathName;
+    }
+
+    return this.prisma.playlist.update({
+      where: { id },
+      data: updateData,
+    });
+  }
+
   // Completely deleting the playlist
-  async remove(id: string, userId: string, userRole: string): Promise<void> {
-    const playlist = await this.prisma.playlist.findUnique({ where: { id } });
-    if (!playlist) throw new NotFoundException('Playlist not found');
+   async remove(id: string, userId: string, userRole: string) {
+    const playlist = await this.findOne(id, userId, userRole);
 
     if (playlist.userId !== userId && userRole !== 'ADMIN') {
       throw new ForbiddenException('You do not have permission to delete this playlist');
     }
 
-    await this.prisma.playlist.delete({ where: { id } });
+    if (playlist.coverUrl) {
+      try {
+          const oldCoverPath: string = join(process.cwd(), playlist.coverUrl);
+          await fs.unlink(oldCoverPath);
+        } catch {
+          /* ignore the missing file*/
+        }
+    }
+
+    await this.prisma.playlist.delete({
+      where: { id },
+    });
   }
 
   async findAll(userRole: string): Promise<Playlist[]> {

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Ip,
@@ -8,14 +9,28 @@ import {
   Req,
   Res,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserLoginDto } from '../user/dto/user.dto';
 import type { Response } from 'express';
+import { AuthGuard } from '@nestjs/passport';
+import { JwtService } from '@nestjs/jwt';
+import { CurrentUser } from './decorators/current-user.decorator';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly jwtService: JwtService,
+  ) {}
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('media-token')
+  getMediaToken(@CurrentUser() sub: string) {
+    const token = this.jwtService.sign({ sub: sub }, { expiresIn: '1h' });
+    return { token };
+  }
 
   @Post('login')
   async login(
@@ -45,13 +60,18 @@ export class AuthController {
     @Ip() ip: string,
   ) {
     const deviceInfo = (req.headers['user-agent'] as string) || 'unknown';
-    const refreshToken = (bodyRefreshToken || req.cookies?.refreshToken) as string | undefined;
+    const refreshToken = (bodyRefreshToken || req.cookies?.refreshToken) as
+      string | undefined;
 
     if (!refreshToken) {
       throw new UnauthorizedException('Refresh token is missing');
     }
 
-    const tokens = await this.authService.refreshTokens(refreshToken, deviceInfo, ip);
+    const tokens = await this.authService.refreshTokens(
+      refreshToken,
+      deviceInfo,
+      ip,
+    );
 
     // Refresh the cookie with a new token (Token Rotation)
     res.cookie('refreshToken', tokens.refreshToken, {
@@ -69,9 +89,10 @@ export class AuthController {
   async logout(
     @Body('refreshToken') bodyRefreshToken: string | undefined,
     @Req() req: Record<string, any>,
-    @Res({ passthrough: true }) res: Response
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const refreshToken = (bodyRefreshToken || req.cookies?.refreshToken) as string;
+    const refreshToken = (bodyRefreshToken ||
+      req.cookies?.refreshToken) as string;
 
     await this.authService.logout(refreshToken);
 

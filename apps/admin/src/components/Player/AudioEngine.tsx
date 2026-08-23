@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { usePlayerStore } from '../../store/usePlayerStore'
-import { useAuthStore } from '../../store/useAuthStore'
+import { authApi } from '../../features/auth/api/auth-api'
 
 const API = import.meta.env.VITE_API_URL
 
@@ -18,17 +18,20 @@ export function AudioEngine() {
   const track = currentTrack()
 
   // Change song -> new src, old stream is interrupted by browser
-  useEffect(() => {
+   useEffect(() => {
     if (!audioRef.current || !track) return
 
-    const token = useAuthStore.getState().accessToken
-    audioRef.current.src = `${API}/music/stream/${track.id}?token=${token}`
-    audioRef.current.load()
+    let cancelled = false
 
-    if (isPlaying) {
-      audioRef.current.play().catch((err) => {
-    console.error('AUDIO PLAY ERROR:', err.name, err.message)
-  })
+    authApi.getMediaToken().then((token) => {
+      if (cancelled || !audioRef.current) return
+      audioRef.current.src = `${API}/music/stream/${track.id}?token=${token}`
+      audioRef.current.load()
+      if (isPlaying) audioRef.current.play().catch(() => {})
+    })
+
+    return () => {
+      cancelled = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [track?.id])

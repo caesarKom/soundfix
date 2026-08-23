@@ -55,6 +55,11 @@ export const authApi = {
     return data;
   },
 
+  getMediaToken: async (): Promise<string> => {
+    const { data } = await apiClient.get<{ token: string }>('/auth/media-token')
+    return data.token
+  },
+
   logout: async (): Promise<void> => {
     await apiClient.post('/auth/logout');
   },

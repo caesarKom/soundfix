@@ -137,7 +137,7 @@ export function PlaylistsPage() {
                                   <p className="font-bold text-white leading-tight">
                                     {playlist.name}
                                   </p>
-                                  <p className="text-xs text-slate-400 mt-0.5 truncate max-w-[200px]">
+                                  <p className="text-xs text-slate-400 mt-0.5 truncate max-w-50">
                                     {playlist.description || (
                                       <span className="italic text-slate-600">
                                         No description

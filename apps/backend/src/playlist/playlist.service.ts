@@ -123,7 +123,7 @@ export class PlaylistService {
     if (newCover) {
       if (playlist.coverUrl) {
         try {
-          const oldCoverPath: string = join(process.cwd(), playlist.coverUrl);
+          const oldCoverPath: string = join(process.cwd(), playlist.coverUrl as string);
           await fs.unlink(oldCoverPath);
         } catch {
           /* ignore the missing file*/
@@ -156,7 +156,7 @@ export class PlaylistService {
 
     if (playlist.coverUrl) {
       try {
-          const oldCoverPath: string = join(process.cwd(), playlist.coverUrl);
+          const oldCoverPath: string = join(process.cwd(), playlist.coverUrl as string);
           await fs.unlink(oldCoverPath);
         } catch {
           /* ignore the missing file*/

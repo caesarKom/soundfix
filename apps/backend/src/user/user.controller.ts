@@ -8,7 +8,9 @@ import {
   Param,
   Patch,
   Post,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UserService } from './user.service';
@@ -16,6 +18,8 @@ import { UserRegisterDto, UserUpdateDto, VerifyOtpDto } from './dto/user.dto';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
+import type { UploadedFileDto } from '../music/dto/music.dto';
 
 @Controller('users')
 export class UserController {
@@ -31,7 +35,7 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   async verifyOtp(@Body() dto: VerifyOtpDto) {
     return this.userService.verifyOtp(dto);
-}
+  }
 
   // 👤 USER LEVEL (Logged in, manages himself)
 
@@ -43,11 +47,13 @@ export class UserController {
 
   @UseGuards(AuthGuard('jwt'))
   @Patch('me')
+  @UseInterceptors(FileInterceptor('avatar'))
   async updateProfile(
     @CurrentUser() userId: string,
-    @Body() dto: UserUpdateDto
+    @Body() dto: UserUpdateDto,
+    @UploadedFile() avatarFile?: UploadedFileDto,
   ) {
-    return this.userService.update(userId, dto);
+    return this.userService.update(userId, dto, avatarFile);
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -76,8 +82,13 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('ADMIN')
   @Patch(':id')
-  async updateUserByAdmin(@Param('id') id: string, @Body() dto: UserUpdateDto) {
-    return this.userService.update(id, dto);
+  @UseInterceptors(FileInterceptor('avatar'))
+  async updateUserByAdmin(
+    @Param('id') id: string,
+    @Body() dto: UserUpdateDto,
+    @UploadedFile() avatarFile?: UploadedFileDto,
+  ) {
+    return this.userService.update(id, dto, avatarFile);
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)

@@ -8,10 +8,17 @@ import { UserRegisterDto, UserUpdateDto, VerifyOtpDto } from './dto/user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { MailService } from '../mail/mail.service';
+import { UploadedFileDto } from '../music/dto/music.dto';
+import { extname, join } from 'path';
+import * as fs from 'fs/promises';
+import { Prisma } from '../generated/prisma/client';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService, private readonly mailService: MailService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mailService: MailService,
+  ) {}
 
   async register(dto: UserRegisterDto) {
     const userExists = await this.prisma.user.findFirst({
@@ -19,7 +26,9 @@ export class UserService {
     });
 
     if (userExists) {
-      throw new ConflictException('User with this email or name already exists');
+      throw new ConflictException(
+        'User with this email or name already exists',
+      );
     }
     // OTP
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -33,7 +42,6 @@ export class UserService {
     });
 
     await this.mailService.sendOTP(dto.email, otpCode, dto.name);
-
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
@@ -55,7 +63,11 @@ export class UserService {
       where: { email: dto.email },
     });
 
-    if (!otpRecord || otpRecord.code !== dto.code || otpRecord.expiresAt < new Date()) {
+    if (
+      !otpRecord ||
+      otpRecord.code !== dto.code ||
+      otpRecord.expiresAt < new Date()
+    ) {
       throw new BadRequestException('Invalid or expired verification code');
     }
 
@@ -129,49 +141,57 @@ export class UserService {
     return user;
   }
 
- async update(id: string, dto: UserUpdateDto) {
-    await this.findOne(id);
+  async update(id: string, dto: UserUpdateDto, avatarFile?: UploadedFileDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      include: { profile: true },
+    });
+    if (!user) throw new NotFoundException('User account not found');
 
-    const { profile, ...userFields } = dto as UserUpdateDto & {
-      profile?: {
-        firstName?: string;
-        lastName?: string;
-        birthDay?: string;
-        bio?: string;
-        avatar?: string;
-        gender?: 'MALE' | 'FEMALE' | 'OTHER';
-      };
-    };
+    const userUpdateData: Prisma.UserUpdateInput = {};
+  if (dto.email !== undefined) userUpdateData.email = dto.email;
+  if (dto.name !== undefined) userUpdateData.name = dto.name;
+  if (dto.role !== undefined) userUpdateData.role = dto.role;
+  if (dto.isVerified !== undefined) userUpdateData.isVerified = dto.isVerified;
 
-    const updateData: Record<string, any> = { ...userFields };
+  const profileUpdateData: Prisma.ProfileUpdateInput = {};
+  if (dto.firstName !== undefined) profileUpdateData.firstName = dto.firstName;
+  if (dto.lastName !== undefined) profileUpdateData.lastName = dto.lastName;
+  if (dto.bio !== undefined) profileUpdateData.bio = dto.bio;
+  if (dto.birthDay !== undefined) profileUpdateData.birthDay = dto.birthDay;
+  if (dto.gender !== undefined) profileUpdateData.gender = dto.gender;
 
-    if (userFields.password) {
-      updateData.password = await bcrypt.hash(userFields.password, 10);
-    }
-
-    // Sprawdzenie unikalności email/name jeśli są zmieniane
-    if (userFields.email || userFields.name) {
-      const conflictUser = await this.prisma.user.findFirst({
-        where: {
-          id: { not: id },
-          OR: [
-            ...(userFields.email ? [{ email: userFields.email }] : []),
-            ...(userFields.name ? [{ name: userFields.name }] : []),
-          ],
-        },
-      });
-
-      if (conflictUser) {
-        throw new ConflictException('Email or Username is already taken');
+    if (avatarFile) {
+      if (user.profile?.avatar) {
+        try {
+          await fs.unlink(join(process.cwd(), user.profile.avatar));
+        } catch {
+          // Ignore
+        }
       }
+
+      const uploadAvatarDir = join(process.cwd(), 'uploads', 'avatars');
+      await fs.mkdir(uploadAvatarDir, { recursive: true });
+
+      const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+      const avatarPathName = `uploads/avatars/${uniqueSuffix}${extname(avatarFile.originalname)}`;
+      await fs.writeFile(
+        join(process.cwd(), avatarPathName),
+        avatarFile.buffer,
+      );
+
+      profileUpdateData.avatar = avatarPathName;
     }
 
-    // If a profile object comes into the DTO, we do an upsert immediately in the same query
-    if (profile) {
+    const updateData: Prisma.UserUpdateInput = { ...userUpdateData };
+
+    if (Object.keys(profileUpdateData).length > 0) {
       updateData.profile = {
         upsert: {
-          create: { ...profile },
-          update: { ...profile },
+          create: {
+            ...profileUpdateData,
+          } as Prisma.ProfileCreateWithoutUserInput,
+          update: { ...profileUpdateData },
         },
       };
     }
@@ -179,31 +199,22 @@ export class UserService {
     const updatedUser = await this.prisma.user.update({
       where: { id },
       data: updateData,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        isVerified: true,
-        profile: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            birthDay: true,
-            bio: true,
-            avatar: true,
-            gender: true,
-          },
-        },
-      },
+      include: { profile: true },
     });
 
     return updatedUser;
   }
 
   async remove(id: string) {
-    await this.findOne(id); // 404 if not exist
+    const user = await this.findOne(id);
+
+    if (user.profile?.avatar) {
+      try {
+        await fs.unlink(join(process.cwd(), user.profile.avatar));
+      } catch {
+        // Ignore
+      }
+    }
 
     // First delete the related sessions (if the onDelete: Cascade is not set in Prisma)
     await this.prisma.session.deleteMany({

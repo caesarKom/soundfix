@@ -1,5 +1,6 @@
-import { ClassTransformer, Type } from 'class-transformer';
-import { IsEmail, IsEnum, IsOptional, IsString, MinLength, ValidateNested } from 'class-validator';
+import { ClassTransformer, Transform, Type } from 'class-transformer';
+import { IsBoolean, IsEmail, IsEnum, IsOptional, IsString, MinLength, ValidateNested } from 'class-validator';
+import { MemberRole, Gender } from '../../generated/prisma/client';
 
 export class UserRegisterDto {
   @IsEmail({}, { message: 'Incorrect email address format' })
@@ -23,12 +24,6 @@ export class UserLoginDto {
   password!: string;
 }
 
-enum Gender {
-  MALE,
-  FEMALE,
-  OTHER,
-}
-
 export class ProfileUpdateDto {
   @IsOptional() @IsString() firstName?: string;
   @IsOptional() @IsString() lastName?: string;
@@ -39,24 +34,20 @@ export class ProfileUpdateDto {
 }
 
 export class UserUpdateDto {
-  @IsOptional()
-  @IsEmail({}, { message: 'Incorrect email address format' })
-  email?: string;
+  @IsOptional() @IsEmail() email?: string;
+  @IsOptional() @IsString() @MinLength(3) name?: string;
+  @IsOptional() @IsEnum(MemberRole) role?: MemberRole;
 
   @IsOptional()
-  @IsString()
-  @MinLength(3, { message: 'Username must be at least 3 characters long' })
-  name?: string;
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  isVerified?: boolean;
 
-  @IsOptional()
-  @IsString()
-  @MinLength(6, { message: 'Password must be at least 6 characters long' })
-  password?: string;
-
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => ProfileUpdateDto)
-  profile?: ProfileUpdateDto;
+  @IsOptional() @IsString() firstName?: string;
+  @IsOptional() @IsString() lastName?: string;
+  @IsOptional() @IsString() bio?: string;
+  @IsOptional() @IsString() birthDay?: string;
+  @IsOptional() @IsEnum(Gender) gender?: Gender;
 }
 
 export class VerifyOtpDto {

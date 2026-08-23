@@ -2,6 +2,7 @@ import { type ReactNode } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/useAuthStore.ts';
 import { authApi } from '../features/auth/api/auth-api.ts';
+import { Avatar } from './avatar.tsx';
 
 interface AdminLayoutProps {
   currentView: string;
@@ -12,6 +13,7 @@ interface AdminLayoutProps {
 export function AdminLayout({ currentView, onViewChange, children }: AdminLayoutProps) {
   const queryClient = useQueryClient();
   const { user, setAuth } = useAuthStore();
+  const IMAGE_URL = import.meta.env.VITE_BACKEND_URL;
 
   const logoutMutation = useMutation({
     mutationFn: authApi.logout,
@@ -61,6 +63,7 @@ export function AdminLayout({ currentView, onViewChange, children }: AdminLayout
 
         <div className="p-4 border-t border-slate-800 bg-slate-900/50">
           <div className="flex items-center justify-between gap-2 mb-3">
+            <Avatar name={user?.name || "?"} imgUrl={user?.profile?.avatar ? `${IMAGE_URL}/${user?.profile?.avatar}` : null} size={32} />
             <div className="truncate">
               <p className="text-sm font-bold text-slate-200 truncate">{user?.name || 'Administrator'}</p>
               <p className="text-xs text-slate-500 truncate">{user?.email}</p>

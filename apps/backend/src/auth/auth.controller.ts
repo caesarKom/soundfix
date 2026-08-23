@@ -28,7 +28,7 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   @Get('media-token')
   getMediaToken(@CurrentUser() sub: string) {
-    const token = this.jwtService.sign({ sub: sub }, { expiresIn: '1h' });
+    const token = this.jwtService.sign({ sub: sub, scope: 'stream' }, { expiresIn: '1h' });
     return { token };
   }
 

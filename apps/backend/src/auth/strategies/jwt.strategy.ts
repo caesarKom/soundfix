@@ -19,11 +19,24 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       ]),
       ignoreExpiration: false,
       secretOrKey: configService.get('JWT_ACCESS_TOKEN', { infer: true }),
+      passReqToCallback: true, // <- to access req in validate()
     });
   }
 
   // Whatever you return from this method will go to req.user in the controller
-  async validate(payload: { sub: string }) {
+  async validate(req: Request, payload: { sub: string; scope?: string }) {
+    const isStreamEndpoint = req.path.startsWith('/v1/music/stream/');
+
+    if (payload.scope === 'stream') {
+      // media token can ONLY be used on stream
+      if (!isStreamEndpoint) {
+        throw new UnauthorizedException('Token not valid for this endpoint');
+      }
+    } else if (isStreamEndpoint && req.query.token) {
+      // regular access token cannot stream via query param
+      throw new UnauthorizedException('Use a media token for streaming');
+    }
+
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
     });

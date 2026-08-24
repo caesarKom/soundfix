@@ -40,7 +40,7 @@ export function PlayerBar() {
           {showRestoreButton && (
             <button
               onClick={toggleVideoVisibility}
-              className="flex-shrink-0 p-1.5 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+              className="shrink-0 p-1.5 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
               aria-label="Pokaż podgląd wideo"
               title="Pokaż podgląd wideo"
             >

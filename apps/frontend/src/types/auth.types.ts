@@ -25,3 +25,7 @@ export interface VerifyOtpDto {
   email: string;
   code: string;
 }
+
+export interface MediaTokenDto {
+  token: string;
+}

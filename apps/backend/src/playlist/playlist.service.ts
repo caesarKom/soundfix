@@ -114,10 +114,11 @@ export class PlaylistService {
     const updateData: Record<string, any> = {
       name: dto.name,
       description: dto.description,
+      isPrivate: dto.isPrivate,
     };
     
     if (dto.isPrivate !== undefined) {
-      updateData.isPrivate = 'false';
+      updateData.isPrivate = false;
     }
 
     if (newCover) {

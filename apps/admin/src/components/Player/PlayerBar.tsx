@@ -1,13 +1,19 @@
-import { Play, Pause, SkipBack, SkipForward, Volume2 } from 'lucide-react'
+import { Play, Pause, SkipBack, SkipForward, Volume2, Maximize2 } from 'lucide-react'
 import { usePlayerStore } from '../../store/usePlayerStore'
 import { ProgressBar } from './ProgressBar'
 
 export function PlayerBar() {
-  const { currentTrack, isPlaying, togglePlay, next, prev, volume, setVolume } = usePlayerStore()
+  const { currentTrack, isPlaying, togglePlay, next, prev, volume, setVolume, isVideoVisible, toggleVideoVisibility } = usePlayerStore()
 
   const track = currentTrack()
   const IMAGE_URL = import.meta.env.VITE_BACKEND_URL
   if (!track) return null // nothing works -> the bar does not render
+
+  const isVideo =
+    track.mimeType.toLowerCase().includes('video') ||
+    track.mimeType.toLowerCase().includes('mp4')
+
+  const showRestoreButton = isVideo && !isVideoVisible
 
   return (
     <div
@@ -23,12 +29,25 @@ export function PlayerBar() {
             alt={track.title}
             className="w-10 h-10 sm:w-12 sm:h-12 rounded object-cover shrink-0 bg-slate-800"
           />
-          <div className="min-w-0 hidden xs:block">
+          <div className="min-w-0 xs:block">
             <p className="text-sm font-semibold text-white truncate">
               {track.title}
             </p>
             <p className="text-xs text-slate-400 truncate">{track.artist}</p>
           </div>
+
+          {/* Przywróć podgląd wideo */}
+          {showRestoreButton && (
+            <button
+              onClick={toggleVideoVisibility}
+              className="flex-shrink-0 p-1.5 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+              aria-label="Pokaż podgląd wideo"
+              title="Pokaż podgląd wideo"
+            >
+              <Maximize2 size={14} />
+            </button>
+          )}
+
         </div>
 
         {/* Controlls + progress */}

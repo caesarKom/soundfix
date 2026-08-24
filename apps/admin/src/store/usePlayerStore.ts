@@ -9,6 +9,10 @@ interface PlayerState {
   progress: number      // sek
   duration: number       // sek
   volume: number         // 0-1
+  isVideoVisible: boolean
+  toggleVideoVisibility: () => void
+  isPlayerBarVisible: boolean
+  togglePlayerBarVisibility: () => void
 
   currentTrack: () => Track | null
 
@@ -28,6 +32,11 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   progress: 0,
   duration: 0,
   volume: 1,
+  isVideoVisible: true,
+  isPlayerBarVisible: true,
+
+  toggleVideoVisibility: () => set((s) => ({ isVideoVisible: !s.isVideoVisible })),
+  togglePlayerBarVisibility: () => set((s) => ({ isPlayerBarVisible: !s.isPlayerBarVisible })),
 
   currentTrack: () => {
     const { queue, currentIndex } = get()

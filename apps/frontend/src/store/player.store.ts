@@ -28,6 +28,9 @@ interface PlayerState {
   setVolume: (volume: number) => void;
   setProgress: (progress: number) => void;
   setDuration: (duration: number) => void;
+
+  isRightPanelVisible: boolean;
+  toggleRightPanel: () => void;
 }
 
 export const usePlayerStore = create<PlayerState>((set, get) => ({
@@ -64,5 +67,8 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   },
   setVolume: (volume) => set({ volume }),
   setProgress: (progress) => set({ progress }),
-  setDuration: (duration) => set({ duration })
+  setDuration: (duration) => set({ duration }),
+
+  isRightPanelVisible: true,
+  toggleRightPanel: () => set((state) => ({ isRightPanelVisible: !state.isRightPanelVisible })),
 }));

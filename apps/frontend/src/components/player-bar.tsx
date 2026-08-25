@@ -4,11 +4,11 @@ import Image from "next/image";
 import { usePlayerStore } from "@/store/player.store";
 import { ENV } from "@/config/env.config";
 import { ProgressBar } from "./progress-bar";
-import { Play, Pause, SkipForward, SkipBack, Volume2 } from "lucide-react";
+import { Play, Pause, SkipForward, SkipBack, Volume2, PanelRight } from "lucide-react";
 import type { ChangeEvent } from "react";
 
 export function PlayerBar() {
-  const { currentTrack, isPlaying, togglePlay, next, prev, volume, setVolume } = usePlayerStore();
+  const { currentTrack, isPlaying, togglePlay, next, prev, volume, setVolume, isRightPanelVisible, toggleRightPanel } = usePlayerStore();
 
   const track = currentTrack();
 
@@ -81,8 +81,19 @@ export function PlayerBar() {
         </div>
       </div>
 
-      {/* Right section: Volume controls */}
+      {/* Right section: Volume controls and toggle button */}
       <div className="flex items-center justify-end gap-2 text-spotify-muted">
+
+        <button
+    onClick={toggleRightPanel}
+    className={`cursor-pointer transition hover:scale-105 p-1 rounded-full hover:bg-spotify-highlight ${
+      isRightPanelVisible ? "text-spotify-green" : "text-spotify-muted hover:text-spotify-white"
+    }`}
+    title="Now Playing View"
+  >
+    <PanelRight size={18} />
+  </button>
+
         <Volume2 size={18} />
         <input
           type="range"

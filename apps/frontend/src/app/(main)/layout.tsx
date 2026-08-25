@@ -1,6 +1,7 @@
 "use client";
 
 import { MediaEngine } from "@/components/media-engine";
+import { NowPlayingView } from "@/components/now-playing-view";
 import { PlayerBar } from "@/components/player-bar";
 import { Sidebar } from "@/components/sidebar";
 import type { ReactNode } from "react";
@@ -23,6 +24,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
       <main className="flex-1 bg-spotify-base rounded-lg overflow-y-auto relative custom-scrollbar">
         {children}
       </main>
+
+      <NowPlayingView />
     </div>
     <footer className="h-22.5 bg-spotify-black px-4 flex items-center">
       <PlayerBar />

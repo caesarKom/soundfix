@@ -8,49 +8,61 @@ interface Track {
   duration: number;
   coverUrl: string;
   audioUrl: string;
+  mimeType: string;
 }
 
 interface PlayerState {
-  currentTrack: Track | null;
-  isPlaying: boolean;
-  volume: number;
   queue: Track[];
   currentTrackIndex: number;
+  isPlaying: boolean;
+  volume: number;
+  progress: number;
+  duration: number;
+  currentTrack: () => Track | null;
   setTrack: (track: Track, queue?: Track[], index?: number) => void;
   togglePlay: () => void;
-  setPlaying: (isPlaying: boolean) => void;
+  playTrack: () => void;
+  pauseTrack: () => void;
+  next: () => void;
+  prev: () => void;
   setVolume: (volume: number) => void;
-  nextTrack: () => void;
-  prevTrack: () => void;
+  setProgress: (progress: number) => void;
+  setDuration: (duration: number) => void;
 }
 
 export const usePlayerStore = create<PlayerState>((set, get) => ({
-  currentTrack: null,
-  isPlaying: false,
-  volume: 0.5,
   queue: [],
   currentTrackIndex: 0,
+  isPlaying: false,
+  volume: 0.5,
+  progress: 0,
+  duration: 0,
+  currentTrack: () => {
+    const { queue, currentTrackIndex } = get();
+    return queue[currentTrackIndex] || null;
+  },
   setTrack: (track, queue = [], index = 0) => set({
-    currentTrack: track,
     queue: queue.length ? queue : [track],
     currentTrackIndex: index,
-    isPlaying: true
+    isPlaying: true,
+    progress: 0
   }),
   togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
-  setPlaying: (isPlaying) => set({ isPlaying }),
-  setVolume: (volume) => set({ volume }),
-  nextTrack: () => {
+  playTrack: () => set({ isPlaying: true }),
+  pauseTrack: () => set({ isPlaying: false }),
+  next: () => {
     const { queue, currentTrackIndex } = get();
     if (currentTrackIndex < queue.length - 1) {
-      const nextIndex = currentTrackIndex + 1;
-      set({ currentTrack: queue[nextIndex], currentTrackIndex: nextIndex, isPlaying: true });
+      set({ currentTrackIndex: currentTrackIndex + 1, isPlaying: true, progress: 0 });
     }
   },
-  prevTrack: () => {
-    const { queue, currentTrackIndex } = get();
+  prev: () => {
+    const { currentTrackIndex } = get();
     if (currentTrackIndex > 0) {
-      const prevIndex = currentTrackIndex - 1;
-      set({ currentTrack: queue[prevIndex], currentTrackIndex: prevIndex, isPlaying: true });
+      set({ currentTrackIndex: currentTrackIndex - 1, isPlaying: true, progress: 0 });
     }
-  }
+  },
+  setVolume: (volume) => set({ volume }),
+  setProgress: (progress) => set({ progress }),
+  setDuration: (duration) => set({ duration })
 }));

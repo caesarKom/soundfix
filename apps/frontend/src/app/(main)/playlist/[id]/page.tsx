@@ -12,7 +12,6 @@ interface PlaylistPageProps {
 }
 
 export default function PlaylistPage({ params }: PlaylistPageProps) {
-  // Unwrap dynamic route parameters according to React 19 / Next.js standards
   const { id } = use(params);
 
   const [playlist, setPlaylist] = useState<PlaylistData | null>(null);
@@ -35,7 +34,7 @@ export default function PlaylistPage({ params }: PlaylistPageProps) {
   const songs = playlist.songs || [];
 
   const handleRowClick = (track: MusicTrack, index: number) => {
-    if (currentTrack?.id === track.id) {
+    if (currentTrack()?.id === track.id) {
       togglePlay();
     } else {
       const formattedQueue = songs.map(t => ({
@@ -45,7 +44,8 @@ export default function PlaylistPage({ params }: PlaylistPageProps) {
         album: t.album,
         duration: t.duration,
         coverUrl: t.coverUrl,
-        audioUrl: t.audioUrl
+        audioUrl: t.audioUrl,
+        mimeType: t.mimeType,
       }));
       
       setTrack(formattedQueue[index], formattedQueue, index);
@@ -96,7 +96,7 @@ export default function PlaylistPage({ params }: PlaylistPageProps) {
             onClick={() => handleRowClick(songs[0], 0)}
             className="w-14 h-14 rounded-full bg-spotify-green flex items-center justify-center shadow-xl hover:scale-105 transition cursor-pointer mb-6"
           >
-            {isPlaying && songs.some(s => s.id === currentTrack?.id) ? (
+            {isPlaying && songs.some(s => s.id === currentTrack()?.id) ? (
               <Pause size={24} fill="black" className="text-spotify-black" />
             ) : (
               <Play size={24} fill="black" className="ml-1 text-spotify-black" />
@@ -123,7 +123,7 @@ export default function PlaylistPage({ params }: PlaylistPageProps) {
             </thead>
             <tbody>
               {songs.map((track, index) => {
-                const isCurrent = currentTrack?.id === track.id;
+                const isCurrent = currentTrack()?.id === track.id;
                 return (
                   <tr
                     key={track.id}

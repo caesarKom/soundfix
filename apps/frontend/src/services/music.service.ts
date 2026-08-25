@@ -11,6 +11,7 @@ export interface MusicTrack {
   playCount: number;
   isPublic: boolean;
   userId: string;
+  mimeType: string;
 }
 
 export interface PlaylistData {
@@ -21,6 +22,11 @@ export interface PlaylistData {
   isPrivate: boolean;
   userId: string;
   songs?: MusicTrack[];
+}
+
+export interface SearchResponse {
+  songs: MusicTrack[];
+  playlists: any[]; // You can replace it with PlaylistData[] if you want to map playlists as well
 }
 
 export const musicService = {
@@ -37,5 +43,11 @@ export const musicService = {
   async getPlaylistById(id: string): Promise<PlaylistData> {
   const response = await api.get<PlaylistData>(`/playlists/${id}`);
   return response.data;
+},
+
+async searchTracks(query: string): Promise<SearchResponse> {
+  const response = await api.get<SearchResponse>(`/music/search?q=${encodeURIComponent(query)}`);
+  return response.data;
 }
+
 };

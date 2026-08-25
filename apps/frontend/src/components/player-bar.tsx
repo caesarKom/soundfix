@@ -1,19 +1,18 @@
 "use client";
 
+import Image from "next/image";
 import { usePlayerStore } from "@/store/player.store";
-import { useAudioPlayer } from "@/hooks/useAudioPlayer";
+import { ENV } from "@/config/env.config";
+import { ProgressBar } from "./progress-bar";
 import { Play, Pause, SkipForward, SkipBack, Volume2 } from "lucide-react";
 import type { ChangeEvent } from "react";
-import Image from "next/image";
-import { ENV } from "@/config/env.config";
 
 export function PlayerBar() {
-  // Activate audio player hook to sync state with the native HTML5 Audio instance
-  useAudioPlayer();
+  const { currentTrack, isPlaying, togglePlay, next, prev, volume, setVolume } = usePlayerStore();
 
-  const { currentTrack, isPlaying, togglePlay, nextTrack, prevTrack, volume, setVolume } = usePlayerStore();
+  const track = currentTrack();
 
-  if (!currentTrack) {
+  if (!track) {
     return (
       <div className="w-full text-center text-xs text-spotify-muted">
         Select a track to start playing
@@ -30,30 +29,30 @@ export function PlayerBar() {
       {/* Left section: Track details */}
       <div className="flex items-center gap-3">
         <div className="relative w-14 h-14 rounded overflow-hidden shrink-0">
-  <Image
-    src={ENV.getMediaUrl(currentTrack.coverUrl)}
-    alt={currentTrack.title}
-    fill
-    sizes="56px"
-    className="object-cover"
-    unoptimized
-  />
-</div>
+          <Image
+            src={ENV.getMediaUrl(track.coverUrl)}
+            alt={track.title}
+            fill
+            sizes="56px"
+            className="object-cover"
+            unoptimized
+          />
+        </div>
         <div className="overflow-hidden">
           <h4 className="text-sm font-medium text-spotify-white truncate">
-            {currentTrack.title}
+            {track.title}
           </h4>
           <p className="text-xs text-spotify-muted truncate">
-            {currentTrack.artist}
+            {track.artist}
           </p>
         </div>
       </div>
 
       {/* Middle section: Player playback controls */}
-      <div className="flex flex-col items-center gap-2">
+      <div className="flex flex-col items-center gap-2 w-full max-w-md mx-auto">
         <div className="flex items-center gap-5">
           <button
-            onClick={prevTrack}
+            onClick={prev}
             className="text-spotify-muted hover:text-spotify-white transition cursor-pointer"
           >
             <SkipBack size={20} />
@@ -69,15 +68,16 @@ export function PlayerBar() {
             )}
           </button>
           <button
-            onClick={nextTrack}
+            onClick={next}
             className="text-spotify-muted hover:text-spotify-white transition cursor-pointer"
           >
             <SkipForward size={20} />
           </button>
         </div>
-        {/* Simple playback progress bar */}
-        <div className="w-full max-w-md h-1 bg-spotify-press rounded-full overflow-hidden">
-          <div className="h-full bg-spotify-white w-0 hover:bg-spotify-green transition-all" />
+        
+        {/* Progress Bar component tracking synchronized metadata */}
+        <div className="w-full">
+          <ProgressBar />
         </div>
       </div>
 

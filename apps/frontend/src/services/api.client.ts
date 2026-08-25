@@ -5,52 +5,54 @@ import { useAuthStore } from "@/store/auth.store";
 export const api = axios.create({
   baseURL: ENV.API_URL,
   withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-  },
 });
 
-api.interceptors.request.use(
-  (config) => {
-    const accessToken = useAuthStore.getState().accessToken;
-    if (accessToken && config.headers) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+const refreshClient = axios.create({
+  baseURL: ENV.API_URL,
+  withCredentials: true,
+});
+
+let isRefreshing = false;
+let failedQueue: any[] = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => error ? prom.reject(error) : prom.resolve(token));
+  failedQueue = [];
+};
+
+api.interceptors.request.use((config) => {
+  const token = useAuthStore.getState().accessToken;
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
 
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-
+      if (isRefreshing) {
+        return new Promise((res, rej) => failedQueue.push({ resolve: res, reject: rej }))
+          .then((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return api(originalRequest);
+          });
+      }
+      isRefreshing = true;
       try {
-        const response = await axios.post(
-          `${ENV.API_URL}/auth/refresh`,
-          {},
-          { withCredentials: true }
-        );
-
-        const { accessToken, user } = response.data;
-        useAuthStore.getState().setAuth(accessToken, user);
-
-        if (originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-        }
-
+        const { data } = await refreshClient.post("/auth/refresh");
+        useAuthStore.getState().setAuth(data.accessToken, 0, data.user);
+        processQueue(null, data.accessToken);
         return api(originalRequest);
-      } catch (refreshError) {
-        // clear the state - Guard in the layout/component will detect the lack of a user and redirect via useRouter
+      } catch (e) {
+        processQueue(e, null);
         useAuthStore.getState().clearAuth();
-        return Promise.reject(refreshError);
+        return Promise.reject(e);
+      } finally {
+        isRefreshing = false;
       }
     }
-
     return Promise.reject(error);
   }
 );

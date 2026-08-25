@@ -10,8 +10,9 @@ interface UserPayload {
 
 interface AuthState {
   accessToken: string | null;
+  //accessTokenExpiresAt: number | null;
   user: UserPayload | null;
-  setAuth: (accessToken: string, user: UserPayload) => void;
+  setAuth: (accessToken: string, expiresInSeconds: number, user: UserPayload) => void;
   clearAuth: () => void;
 }
 
@@ -20,12 +21,9 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       accessToken: null,
       user: null,
-      setAuth: (accessToken, user) => set({ accessToken, user }),
+      setAuth: (accessToken, _, user) => set({ accessToken, user }),
       clearAuth: () => set({ accessToken: null, user: null }),
     }),
-    {
-      name: "soundfix-auth-storage",
-      storage: createJSONStorage(() => sessionStorage),
-    }
+    { name: "soundfix-auth-storage", storage: createJSONStorage(() => sessionStorage) }
   )
 );

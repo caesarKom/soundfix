@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { usePlayerStore } from "@/store/player.store";
 import { ENV } from "@/config/env.config";
-import { X, Music, User } from "lucide-react";
+import { X, User } from "lucide-react";
 import { SyntheticEvent, useEffect, useRef } from "react";
 import { authService } from "@/services/auth.service";
 
@@ -37,7 +37,7 @@ export function NowPlayingView() {
     };
   }, [track?.id, isVideo]);
 
-  // Synchronizacja przycisków Play / Pause dla wideo
+  // Play/Pause button synchronization for video
   useEffect(() => {
     if (!videoRef.current || !isVideo) return;
 
@@ -48,7 +48,7 @@ export function NowPlayingView() {
     }
   }, [isPlaying, isVideo]);
 
-  // Synchronizacja suwaka głośności dla wideo
+  // Sync the volume slider for video
   useEffect(() => {
     if (videoRef.current && isVideo) {
       videoRef.current.volume = volume;

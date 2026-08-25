@@ -26,7 +26,7 @@ export interface PlaylistData {
 
 export interface SearchResponse {
   songs: MusicTrack[]
-  playlists: any[] // You can replace it with PlaylistData[] if you want to map playlists as well
+  playlists: any[]
 }
 
 export const musicService = {
@@ -60,5 +60,25 @@ export const musicService = {
   async toggleLikeTrack(id: string): Promise<{ liked: boolean }> {
     const response = await api.post<{ liked: boolean }>(`/music/like/${id}`)
     return response.data
+  },
+
+  async createPlaylist(data: {
+    name: string
+    description?: string
+    isPrivate?: boolean
+  }): Promise<PlaylistData> {
+    const response = await api.post<PlaylistData>("/playlists", data)
+    return response.data
+  },
+
+  async addSongToPlaylist(playlistId: string, musicId: string): Promise<void> {
+    await api.post(`/playlists/${playlistId}/songs`, { songId: musicId })
+  },
+
+  async removeSongFromPlaylist(
+    playlistId: string,
+    musicId: string,
+  ): Promise<void> {
+    await api.delete(`/playlists/${playlistId}/songs`, { data: { songId: musicId } })
   },
 }

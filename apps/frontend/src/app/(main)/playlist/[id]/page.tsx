@@ -1,43 +1,55 @@
-"use client";
+"use client"
 
-import { useEffect, useState, use } from "react";
-import Image from "next/image";
-import { musicService, PlaylistData, MusicTrack } from "@/services/music.service";
-import { usePlayerStore } from "@/store/player.store";
-import { ENV } from "@/config/env.config";
-import { Play, Pause, Clock } from "lucide-react";
+import { use } from "react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import Image from "next/image"
+import {
+  musicService,
+  MusicTrack,
+  PlaylistData,
+} from "@/services/music.service"
+import { usePlayerStore } from "@/store/player.store"
+import { ENV } from "@/config/env.config"
+import { Play, Pause, Clock, Trash2 } from "lucide-react"
 
 interface PlaylistPageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string }>
 }
 
 export default function PlaylistPage({ params }: PlaylistPageProps) {
-  const { id } = use(params);
+  const { id } = use(params)
+  const queryClient = useQueryClient()
+  const { setTrack, currentTrack, isPlaying, togglePlay } = usePlayerStore()
 
-  const [playlist, setPlaylist] = useState<PlaylistData | null>(null);
-  const { setTrack, currentTrack, isPlaying, togglePlay } = usePlayerStore();
+  const removeSongMutation = useMutation({
+    mutationFn: (musicId: string) =>
+      musicService.removeSongFromPlaylist(id, musicId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["playlist", id] })
+    },
+  })
 
-  useEffect(() => {
-    musicService.getPlaylistById(id)
-      .then(setPlaylist)
-      .catch((err) => console.error("Failed to load playlist detailed view", err));
-  }, [id]);
+  const { data: playlist } = useQuery<PlaylistData, null>({
+    queryKey: ["playlist", id],
+    queryFn: () => musicService.getPlaylistById(id),
+    initialData: queryClient.getQueryData(["playlist", id]),
+  })
 
   if (!playlist) {
     return (
       <div className="flex h-full items-center justify-center text-sm text-spotify-muted">
         Loading playlist details...
       </div>
-    );
+    )
   }
 
-  const songs = playlist.songs || [];
+  const songs = playlist.songs || []
 
   const handleRowClick = (track: MusicTrack, index: number) => {
     if (currentTrack()?.id === track.id) {
-      togglePlay();
+      togglePlay()
     } else {
-      const formattedQueue = songs.map(t => ({
+      const formattedQueue = songs.map((t) => ({
         id: t.id,
         title: t.title,
         artist: t.artist,
@@ -46,17 +58,17 @@ export default function PlaylistPage({ params }: PlaylistPageProps) {
         coverUrl: t.coverUrl,
         audioUrl: t.audioUrl,
         mimeType: t.mimeType,
-      }));
-      
-      setTrack(formattedQueue[index], formattedQueue, index);
+      }))
+
+      setTrack(formattedQueue[index], formattedQueue, index)
     }
-  };
+  }
 
   const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
-  };
+    const mins = Math.floor(seconds / 60)
+    const secs = Math.floor(seconds % 60)
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`
+  }
 
   return (
     <div className="min-h-full bg-linear-to-b from-spotify-highlight to-spotify-base">
@@ -84,7 +96,8 @@ export default function PlaylistPage({ params }: PlaylistPageProps) {
             {playlist.description || "No description provided."}
           </p>
           <p className="text-xs text-spotify-white font-medium mt-1">
-            Soundfix • <span className="text-spotify-muted">{songs.length} songs</span>
+            Soundfix •{" "}
+            <span className="text-spotify-muted">{songs.length} songs</span>
           </p>
         </div>
       </div>
@@ -96,15 +109,19 @@ export default function PlaylistPage({ params }: PlaylistPageProps) {
             onClick={() => handleRowClick(songs[0], 0)}
             className="w-14 h-14 rounded-full bg-spotify-green flex items-center justify-center shadow-xl hover:scale-105 transition cursor-pointer mb-6"
           >
-            {isPlaying && songs.some(s => s.id === currentTrack()?.id) ? (
+            {isPlaying && songs.some((s) => s.id === currentTrack()?.id) ? (
               <Pause size={24} fill="black" className="text-spotify-black" />
             ) : (
-              <Play size={24} fill="black" className="ml-1 text-spotify-black" />
+              <Play
+                size={24}
+                fill="black"
+                className="ml-1 text-spotify-black"
+              />
             )}
           </button>
         )}
 
-        {/* Tracks standard Spotify grid table */}
+        {/* Tracks table */}
         {songs.length === 0 ? (
           <div className="text-sm text-spotify-muted py-10 text-center">
             This playlist is empty. Add some tracks via Admin Panel or database.
@@ -115,7 +132,8 @@ export default function PlaylistPage({ params }: PlaylistPageProps) {
               <tr className="border-b border-spotify-press text-xs font-bold tracking-wider uppercase text-spotify-muted">
                 <th className="py-2 w-12 text-center">#</th>
                 <th className="py-2">Title</th>
-                <th className="py-2 hidden md:table-cell">Album</th>
+                <th className="py-2 hidden md:block">Album</th>
+                <th className="py-2 w-20 text-center">Actions</th>
                 <th className="py-2 w-16 text-center">
                   <Clock size={16} />
                 </th>
@@ -123,7 +141,7 @@ export default function PlaylistPage({ params }: PlaylistPageProps) {
             </thead>
             <tbody>
               {songs.map((track, index) => {
-                const isCurrent = currentTrack()?.id === track.id;
+                const isCurrent = currentTrack()?.id === track.id
                 return (
                   <tr
                     key={track.id}
@@ -132,9 +150,13 @@ export default function PlaylistPage({ params }: PlaylistPageProps) {
                   >
                     <td className="py-3 text-center font-medium w-12">
                       {isCurrent && isPlaying ? (
-                        <span className="text-spotify-green text-xs animate-pulse">▶</span>
+                        <span className="text-spotify-green text-xs animate-pulse">
+                          ▶
+                        </span>
                       ) : (
-                        <span className={isCurrent ? "text-spotify-green" : ""}>{index + 1}</span>
+                        <span className={isCurrent ? "text-spotify-green" : ""}>
+                          {index + 1}
+                        </span>
                       )}
                     </td>
                     <td className="py-3 flex items-center gap-3">
@@ -149,7 +171,9 @@ export default function PlaylistPage({ params }: PlaylistPageProps) {
                         />
                       </div>
                       <div className="overflow-hidden pr-4">
-                        <p className={`font-medium truncate ${isCurrent ? "text-spotify-green" : "text-spotify-white"}`}>
+                        <p
+                          className={`font-medium truncate ${isCurrent ? "text-spotify-green" : "text-spotify-white"}`}
+                        >
                           {track.title}
                         </p>
                         <p className="text-xs truncate group-hover:text-spotify-white transition">
@@ -160,16 +184,31 @@ export default function PlaylistPage({ params }: PlaylistPageProps) {
                     <td className="py-3 hidden md:table-cell truncate max-w-50">
                       {track.album}
                     </td>
+
+                    {/* Action */}
+                    <td className="py-3 text-center w-16 text-2xl font-medium">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation() // Prevents the song from playing when clicking the trash can
+                          removeSongMutation.mutate(track.id)
+                        }}
+                        className="cursor-pointer text-spotify-muted opacity-0 group-hover:opacity-100 hover:text-red-500 transition p-1"
+                        title="Remove from playlist"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+
                     <td className="py-3 text-center w-16 text-xs font-medium">
                       {formatDuration(track.duration)}
                     </td>
                   </tr>
-                );
+                )
               })}
             </tbody>
           </table>
         )}
       </div>
     </div>
-  );
+  )
 }

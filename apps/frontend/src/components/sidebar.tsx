@@ -1,37 +1,55 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { Home, Search, Library, LogOut } from "lucide-react";
-import { musicService, PlaylistData } from "@/services/music.service";
-import { ENV } from "@/config/env.config";
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/store/auth.store";
-import { authService } from "@/services/auth.service";
-
+import Link from "next/link"
+import Image from "next/image"
+import { Home, Search, Library, LogOut, Plus } from "lucide-react"
+import { musicService } from "@/services/music.service"
+import { ENV } from "@/config/env.config"
+import { useRouter } from "next/navigation"
+import { useAuthStore } from "@/store/auth.store"
+import { authService } from "@/services/auth.service"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 export function Sidebar() {
-     const router = useRouter();
-  const { clearAuth, user } = useAuthStore();
-  const [playlists, setPlaylists] = useState<PlaylistData[]>([]);
+  const queryClient = useQueryClient()
+  const router = useRouter()
+  const { clearAuth, user } = useAuthStore()
 
-  useEffect(() => {
-    musicService.getUserPlaylists()
-      .then(setPlaylists)
-      .catch((err) => console.error("Failed to load playlists", err));
-  }, []);
+  const { data: playlists = [] } = useQuery({
+    queryKey: ["userPlaylists"],
+    queryFn: musicService.getUserPlaylists,
+  })
 
   const handleLogoutClick = async () => {
     try {
-      await authService.logout();
+      await authService.logout()
     } catch (err) {
-      console.error("Backend logout failed, clearing frontend session anyway", err);
+      console.error(
+        "Backend logout failed, clearing frontend session anyway",
+        err,
+      )
     } finally {
-      clearAuth();
-      router.push("/login");
+      clearAuth()
+      router.push("/login")
     }
-  };
+  }
+
+  const playlistCount = playlists.length + 1
+
+  const createPlaylistMutation = useMutation({
+    mutationFn: () =>
+      musicService.createPlaylist({
+        name: `My Playlist #${playlistCount}`,
+        description: "New custom playlist created by user.",
+        isPrivate: false,
+      }),
+    onSuccess: (newPlaylist) => {
+      // refreshing the playlist list in the sidebar
+      queryClient.invalidateQueries({ queryKey: ["userPlaylists"] })
+      // redirect the user directly to the newly created playlist
+      router.push(`/playlist/${newPlaylist.id}`)
+    },
+  })
 
   return (
     <div className="flex flex-col gap-2 h-full">
@@ -58,9 +76,19 @@ export function Sidebar() {
       <div className="flex-1 bg-spotify-base rounded-lg p-5 flex flex-col overflow-hidden items-center md:items-start">
         <div className="flex items-center gap-3 text-spotify-muted mb-4 w-full justify-center md:justify-start">
           <Library size={24} />
-          <span className="text-sm font-bold hidden md:inline">Your Library</span>
-        </div>
+          <span className="text-sm font-bold hidden md:inline">
+            Your Library
+          </span>
 
+          {/* Add new playlist */}
+          <button
+            onClick={() => createPlaylistMutation.mutate()}
+            className="hidden md:flex items-center justify-center p-1 rounded-full text-spotify-muted hover:text-spotify-white hover:bg-spotify-highlight transition cursor-pointer"
+            title="Create playlist"
+          >
+            <Plus size={20} />
+          </button>
+        </div>
         {/* Playlists */}
         <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar w-full">
           {playlists.length === 0 ? (
@@ -109,7 +137,7 @@ export function Sidebar() {
             {user?.name || "User Account"}
           </span>
         </div>
-        
+
         <button
           onClick={handleLogoutClick}
           className="flex items-center gap-5 text-sm font-bold text-spotify-muted hover:text-red-500 transition w-full justify-center md:justify-start p-2 rounded hover:bg-spotify-highlight cursor-pointer"
@@ -119,6 +147,5 @@ export function Sidebar() {
         </button>
       </div>
     </div>
-
-  );
+  )
 }

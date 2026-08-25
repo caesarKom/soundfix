@@ -42,7 +42,7 @@ api.interceptors.response.use(
       isRefreshing = true;
       try {
         const { data } = await refreshClient.post("/auth/refresh");
-        useAuthStore.getState().setAuth(data.accessToken, 0, data.user);
+        useAuthStore.getState().setToken(data.accessToken);
         processQueue(null, data.accessToken);
         return api(originalRequest);
       } catch (e) {

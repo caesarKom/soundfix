@@ -43,11 +43,11 @@ export default function HomePage() {
       setTrack(formattedQueue[index], formattedQueue, index)
     }
   }
-console.log("USER : ",user?.name)
+
   return (
     <div className="p-6 bg-linear-to-b from-spotify-highlight to-spotify-base min-h-full">
       <h1 className="text-3xl font-bold mb-6 tracking-tight text-spotify-white">
-        {greeting}{" "}{user?.name}{" "}
+        {greeting} {user?.name}{" "}
       </h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">

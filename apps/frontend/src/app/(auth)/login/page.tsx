@@ -10,7 +10,7 @@ import type { SubmitEvent } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { setAuth, user } = useAuthStore();
+  const { setToken, setUser, user} = useAuthStore();
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,7 +30,10 @@ export default function LoginPage() {
 
     try {
       const data = await authService.login({ email, password });
-      setAuth(data.accessToken, data.user);
+      setToken(data.accessToken);
+      const userData = await authService.getUserProfile();
+      setUser(userData);
+    
       router.push("/home");
     } catch (err: any) {
       setError(err.response?.data?.message || "Invalid credentials");

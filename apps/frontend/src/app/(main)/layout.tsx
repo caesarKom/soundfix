@@ -17,7 +17,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     <MediaEngine />
     
     <div className="flex flex-1 p-2 gap-2 h-[calc(100vh-90px)] overflow-hidden">
-      <aside className="w-[320px] flex flex-col gap-2 shrink-0">
+      <aside className="w-20 md:w-[320px] flex flex-col gap-2 shrink-0 transition-all duration-300">
         <Sidebar />
       </aside>
       <main className="flex-1 bg-spotify-base rounded-lg overflow-y-auto relative custom-scrollbar">

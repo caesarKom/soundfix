@@ -5,3 +5,4 @@ allowBuilds:
   bcrypt: false
   prisma: true
   react-native-nitro-modules: false
+  unrs-resolver: true

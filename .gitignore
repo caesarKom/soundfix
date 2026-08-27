@@ -28,17 +28,17 @@ out/
 # --- Vite (admin) ---
 /apps/admin/dist
 
-# --- React Native (apk) ---
+# --- React Native (soundfix) ---
 .expo/
 *.jks
 *.p8
 *.p12
 *.key
 *.mobileprovision
-/apps/apk/android/.gradle
-/apps/apk/android/app/build
-/apps/apk/ios/Pods
-/apps/apk/ios/build
+/apps/soundfix/android/.gradle
+/apps/soundfix/android/app/build
+/apps/soundfix/ios/Pods
+/apps/soundfix/ios/build
 
 # --- Prisma ---
 /apps/backend/prisma/dev.db

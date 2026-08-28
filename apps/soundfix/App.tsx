@@ -1,36 +1,55 @@
-import { StatusBar, StyleSheet, Text, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
 import './global.css';
+import React, { useEffect, useState } from 'react';
+import { StatusBar, StatusBarProps } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { NavigationContainer } from '@react-navigation/native';
 
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+import { useAuthStore } from './src/store/useAuthStore';
+import { SplashScreen } from './src/screens/SplashScreen';
+import { RootNavigator } from './src/navigation/RootNavigator';
 
-  return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
-  );
-}
-
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
-
-  return (
-    <View style={styles.container}>
-      <Text style={{paddingTop:safeAreaInsets.top}} className='text-red-500'>WELCOME TO SOUNDFIX APP</Text>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    height:"100%"
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      staleTime: 1000 * 60 * 5,
+    },
   },
 });
 
-export default App;
+export default function App() {
+  const [isSplashVisible, setIsSplashVisible] = useState(true);
+  const checkAuthStatus = useAuthStore((state) => state.checkAuthStatus);
+
+  useEffect(() => {
+    // Perform initial authentication status check during splash screen
+    checkAuthStatus();
+  }, [checkAuthStatus]);
+
+  if (isSplashVisible) {
+    return (
+      <SafeAreaProvider>
+        <StatusBar 
+  barStyle="light-content" 
+  {...({ backgroundColor: '#0f172a' } as StatusBarProps)} 
+/>
+        <SplashScreen onFinish={() => setIsSplashVisible(false)} />
+      </SafeAreaProvider>
+    );
+  }
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <SafeAreaProvider>
+        <NavigationContainer>
+          <StatusBar 
+  barStyle="light-content" 
+  {...({ backgroundColor: '#0f172a' } as StatusBarProps)} 
+/>
+          <RootNavigator />
+        </NavigationContainer>
+      </SafeAreaProvider>
+    </QueryClientProvider>
+  );
+}

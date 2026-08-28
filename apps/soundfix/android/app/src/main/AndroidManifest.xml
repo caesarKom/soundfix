@@ -1,9 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
       android:name=".MainApplication"
@@ -12,6 +9,7 @@
       android:roundIcon="@mipmap/ic_launcher_round"
       android:allowBackup="false"
       android:theme="@style/AppTheme"
+      android:usesCleartextTraffic="${usesCleartextTraffic}"
       android:supportsRtl="true">
       <activity
         android:name=".MainActivity"

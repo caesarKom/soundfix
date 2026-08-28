@@ -1,20 +1,10 @@
 module.exports = {
   root: true,
-  extends: [
-    '@react-native',
-    'plugin:react/recommended',
-    'plugin:prettier/recommended',
-  ],
-  plugins: [
-    '@typescript-eslint',
-    'react',
-    'react-native',
-    'import',
-    'prettier',
-  ],
+  extends: '@react-native',
 
-  rules: {
-    'prettier/prettier': 'warn',
-    'react-native/no-inline-styles': 'off',
+  parserOptions: {
+    babelOptions: {
+      configFile: require.resolve('./babel.config.js'),
+    },
   },
 };

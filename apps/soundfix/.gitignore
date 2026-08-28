@@ -1,7 +1,9 @@
 # OSX
+#
 .DS_Store
 
 # Xcode
+#
 build/
 *.pbxuser
 !default.pbxuser
@@ -32,7 +34,6 @@ local.properties
 *.keystore
 !debug.keystore
 .kotlin/
-android/app/build.gradle
 
 # node.js
 #

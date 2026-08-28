@@ -37,6 +37,7 @@ out/
 *.mobileprovision
 /apps/soundfix/android/.gradle
 /apps/soundfix/android/app/build
+/apps/soundfix/android/app/build.gradle
 /apps/soundfix/ios/Pods
 /apps/soundfix/ios/build
 

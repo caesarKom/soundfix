@@ -1,53 +1,37 @@
 import { create } from 'zustand';
-
-export interface UserProfile {
-  id: string;
-  email: string;
-  name: string;
-}
+import { createJSONStorage, persist } from 'zustand/middleware';
+import { mmkvStorage } from './storage';
+import { User } from '../types/auth';
 
 interface AuthState {
-  user: UserProfile | null;
-  token: string | null;
+  user: User | null;
+  accessToken: string | null;
+  refreshToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  setAuth: (user: UserProfile, token: string) => void;
+  setUser: (user: User) => void;
+  setTokens: (accessToken: string, refreshToken: string) => void;
   logout: () => void;
-  checkAuthStatus: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  token: null,
-  isAuthenticated: false,
-  isLoading: true,
+export const useAuthStore = create<AuthState>() (
+    persist(
+        (set, get) => ({
+            user: null,
+            accessToken: null,
+            refreshToken: null,
+            isAuthenticated: false,
+            isLoading: false,
+            setUser: user => set({ user }),
+            setTokens: (accessToken, refreshToken) => set({ accessToken, refreshToken}),
+            logout: () => set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false })
+        }),
 
-  setAuth: (user, token) =>
-    set({
-      user,
-      token,
-      isAuthenticated: true,
-      isLoading: false,
-    }),
+        {
+            name: 'user-storage',
+            storage: createJSONStorage(() => mmkvStorage),
+        },
+    ),
 
-  logout: () =>
-    set({
-      user: null,
-      token: null,
-      isAuthenticated: false,
-      isLoading: false,
-    }),
+);
 
-  checkAuthStatus: async () => {
-    try {
-      // Simulate token restoration check from persistence (e.g. MMKV or SecureStore)
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      
-      // Default to unauthenticated state after splash check
-      set({ isLoading: false });
-    } catch (error) {
-      console.error('Failed to restore authentication state:', error);
-      set({ isLoading: false });
-    }
-  },
-}));

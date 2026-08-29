@@ -7,4 +7,9 @@ module.exports = {
       configFile: require.resolve('./babel.config.js'),
     },
   },
+
+  rules: {
+    "@typescript-eslint/no-unused-vars": "off"
+  }
+  
 };

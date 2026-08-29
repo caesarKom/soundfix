@@ -5,3 +5,4 @@ module.exports = withNativeWind(
   mergeConfig(getDefaultConfig(__dirname), {}),
   { input: './global.css', inlineRem: 16 },
 );
+

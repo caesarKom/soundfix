@@ -142,6 +142,9 @@ export const ProfileScreen = () => {
 
           {/* Form */}
           <View className="space-y-4">
+            <View className='flex-1 items-center'>
+                <Text className="text-green-400 text-xs font-semibold mb-2 uppercase tracking-wider">{user?.role === "ADMIN" ? "You are ADMIN": "You are MEMBER"}</Text>
+            </View>
      
             <View>
               <Text className="text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wider">

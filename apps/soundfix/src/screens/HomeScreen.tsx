@@ -19,7 +19,7 @@ export const HomeScreen = () => {
       {/* Top Header - Style Spotify */}
       <View className="flex-row items-center justify-between px-4 py-3">
         <Avatar
-          imageUrl={MEDIA_URL+user?.profile?.avatar}
+          imageUrl={MEDIA_URL+"/"+user?.profile?.avatar}
           name={user?.name || user?.email}
           size={36}
           onPress={() => navigation.openDrawer()}
@@ -30,9 +30,7 @@ export const HomeScreen = () => {
 
       {/* Zawartość ekranu */}
       <View className="flex-1 px-4 justify-center items-center">
-        <Text className="text-slate-400">Główna zawartość ekranu Home</Text>
-        <Text className="text-slate-400">User: {JSON.stringify(user)}</Text>
-        <Text className="text-slate-400">AccessToken: {JSON.stringify(accessToken)}</Text>
+        <Text className="text-slate-400">Home Screen</Text>
       </View>
     </View>
   );

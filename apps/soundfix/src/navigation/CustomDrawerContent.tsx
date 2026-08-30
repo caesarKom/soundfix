@@ -7,6 +7,7 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Avatar } from '../components/Avatar';
 import { useAuthStore } from '../store/useAuthStore';
+import { MEDIA_URL } from '../config/env';
 
 export const CustomDrawerContent: React.FC<DrawerContentComponentProps> = (props: DrawerContentComponentProps) => {
 
@@ -16,29 +17,29 @@ export const CustomDrawerContent: React.FC<DrawerContentComponentProps> = (props
   return (
     <View className="flex-1 bg-slate-900">
       <DrawerContentScrollView {...props} className='pt-5'>
-        {/* Górna sekcja - Krótkie info o profilu */}
+        {/* Top section - Brief profile info */}
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => props.navigation.navigate('Profile')}
           className="flex-row items-center px-4 py-4 mb-2 border-b border-slate-800"
         >
           <Avatar
-            imageUrl={user?.profile?.avatar}
+            imageUrl={MEDIA_URL+"/"+user?.profile?.avatar}
             name={user?.name || user?.email}
             size={56}
           />
           <View className="ml-3 flex-1">
             <Text className="text-white font-bold text-lg" numberOfLines={1}>
-              {user?.name || 'Użytkownik'}
+              {user?.name || 'User'}
             </Text>
             <Text className="text-sky-400 text-xs font-semibold mt-0.5">
-              Zobacz profil
+              View profile
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color="#64748b" />
         </TouchableOpacity>
 
-        {/* Pozycje menu */}
+        {/* Menu items */}
         <View className="px-2 mt-2">
           <TouchableOpacity
             onPress={() => props.navigation.navigate('Profile')}
@@ -54,13 +55,13 @@ export const CustomDrawerContent: React.FC<DrawerContentComponentProps> = (props
           >
             <Ionicons name="settings-outline" size={22} color="#f8fafc" />
             <Text className="text-slate-200 font-medium ml-4 text-base">
-              Ustawienia i prywatność
+              Settings and privacy
             </Text>
           </TouchableOpacity>
         </View>
       </DrawerContentScrollView>
 
-      {/* Dolna sekcja - Wyloguj */}
+      {/* Bottom section - Logout */}
       <View className="p-4 border-t border-slate-800 mb-6">
         <TouchableOpacity
           onPress={logout}
@@ -68,7 +69,7 @@ export const CustomDrawerContent: React.FC<DrawerContentComponentProps> = (props
         >
           <Ionicons name="log-out-outline" size={22} color="#ef4444" />
           <Text className="text-red-500 font-semibold ml-4 text-base">
-            Wyloguj się
+            Log Out
           </Text>
         </TouchableOpacity>
       </View>

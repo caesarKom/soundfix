@@ -33,6 +33,7 @@ export const HomeScreen = () => {
   return (
     <View style={{ paddingTop: insets.top }} className="flex-1 bg-slate-950 px-4">
       <Text className="text-3xl font-extrabold text-white my-4">Discover</Text>
+      <Text className="text-xl font-extrabold text-green-500 my-4">Enjoi</Text>
       
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
         <Text className="text-lg font-bold text-slate-300 mb-3">Featured Tracks</Text>

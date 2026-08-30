@@ -17,7 +17,6 @@ export type MainTabParamList = {
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-// --- Render functions for icons (returns JSX.Element directly to comply with React 19 & RN Nav v7) ---
 const renderHomeIcon = ({ color, size }: { focused: boolean; color: string; size: number }) => (
   <Ionicons name="home-outline" size={size} color={color} />
 );
@@ -35,19 +34,21 @@ export const TabNavigator = () => {
     const insets = useSafeAreaInsets();
   return (
     <View className="flex-1 bg-slate-950">
-        <MiniPlayer />
+        
       <Tab.Navigator
         screenOptions={{
-          headerShown: false,
           tabBarStyle: {
-            backgroundColor: '#0f172a',
+            backgroundColor: 'transparent',
             borderTopColor: '#1e293b',
-            height: 60,
             paddingBottom: insets.bottom,
             paddingTop: 8,
+            zIndex: 5,
+            height: 60 + insets.bottom,
           },
+          headerShown: false,
           tabBarActiveTintColor: '#38bdf8',
           tabBarInactiveTintColor: '#94a3b8',
+          tabBarHideOnKeyboard: true
         }}
       >
         <Tab.Screen
@@ -76,7 +77,7 @@ export const TabNavigator = () => {
         />
       </Tab.Navigator>
 
-
+{/* <MiniPlayer /> */}
       
     </View>
   );

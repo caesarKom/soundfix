@@ -1,20 +1,22 @@
-export interface UserProfile {
-  id: string;
+export interface UpdateUserProfile {
+  name?: string;
+  profile?: {
   firstName?: string | null;
   lastName?: string | null;
   birthDay?: string | null;
   bio?: string | null;
   avatar?: string | null;
   gender?: string | null;
+  }
 }
 
 export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-  isVerified: boolean;
-  createdAt: string;
+  id?: string;
+  email?: string;
+  name?: string;
+  role?: string;
+  isVerified?: boolean;
+  createdAt?: string;
   profile?: {
     firstName?: string | null;
     lastName?: string | null;

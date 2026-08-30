@@ -1,6 +1,7 @@
 import axios from "axios";
 import { API_BASE_URL, REFRESH_TOKEN } from "../config/env";
 import { token_storage } from "../store/storage";
+import { Alert } from "react-native";
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -12,7 +13,8 @@ export const api = axios.create({
 
 // Request interceptor to add auth token
 api.interceptors.request.use(async config => {
-    const token = token_storage.getString('access_token');
+    const token = token_storage.getString('accessToken');
+
     if (token) {
         config.headers.Authorization = `Bearer ${token}`
     }
@@ -47,7 +49,7 @@ api.interceptors.response.use(
 
 export const refreshToken = async () => {
   try {
-    const refresh_token = token_storage.getString('refresh_token');
+    const refresh_token = token_storage.getString('refreshToken');
     const response = await axios.post(REFRESH_TOKEN, { refresh_token });
 
     if (response.status !== 200) {
@@ -58,14 +60,14 @@ export const refreshToken = async () => {
     const newRefresh = await response.data.refreshToken
 
     if (response.data.success) {
-      token_storage.set('access_token', newAccess);
-      token_storage.set('refresh_token', newRefresh);
+      token_storage.set('accessToken', newAccess);
+      token_storage.set('refreshToken', newRefresh);
 
       return newAccess
     }
   } catch (error) {
     console.log('REFRESH TOKEN EXPIRED!!!', error);
-    
+    Alert.alert('REFRESH TOKEN EXPIRED!!!')
     token_storage.clearAll();
   }
 

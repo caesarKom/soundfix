@@ -1,7 +1,6 @@
 import axios from "axios";
 import { API_BASE_URL, REFRESH_TOKEN } from "../config/env";
 import { token_storage } from "../store/storage";
-import { Alert } from "react-native";
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -67,7 +66,6 @@ export const refreshToken = async () => {
     }
   } catch (error) {
     console.log('REFRESH TOKEN EXPIRED!!!', error);
-    Alert.alert('REFRESH TOKEN EXPIRED!!!')
     token_storage.clearAll();
   }
 

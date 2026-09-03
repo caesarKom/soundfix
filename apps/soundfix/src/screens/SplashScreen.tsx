@@ -7,11 +7,8 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 
-interface SplashScreenProps {
-  onFinish: () => void;
-}
 
-export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
+export const SplashScreen = ({onFinish}:{onFinish?: () => void}) => {
   const opacity = useSharedValue(0);
   const scale = useSharedValue(0.8);
 
@@ -32,7 +29,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
     const timeout = setTimeout(() => {
       opacity.value = withTiming(0, { duration: 400 }, (isFinished) => {
         if (isFinished) {
-          onFinish();
+          if (onFinish) onFinish()
         }
       });
     }, 2000);

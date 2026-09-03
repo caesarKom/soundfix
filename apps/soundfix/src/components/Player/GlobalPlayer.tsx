@@ -1,73 +1,118 @@
-import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
-import Animated from 'react-native-reanimated';
-import { usePlayerStore } from '../../store/usePlayerStore';
+import React, { useState } from 'react';
+import { StyleSheet } from 'react-native';
 import { MiniPlayer } from './MiniPlayer';
-import { usePlayerAnimation } from './usePlayerAnimation';
+import FullScreenPlayer from './FullScreenPlayer';
+import Animated, {
+  Extrapolation,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  runOnJS,
+  useAnimatedReaction,
+} from 'react-native-reanimated';
+import { BOTTOM_TAB_HEIGHT, screenHeight } from '../../utils/constants';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-interface GlobalPlayerProps {
-  children: React.ReactNode;
-}
+export const GlobalPlayer = () => {
+  const MIN_HEIGHT = 60;
+  const MAX_HEIGHT = screenHeight
+  const insets = useSafeAreaInsets();
 
-export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({ children }) => {
-  const currentTrack = usePlayerStore((state) => state.currentTrack);
-  
-  const {
-    animatedContainerStyle,
-    collapseOpacityStyle,
-    expandedOpacityStyle,
-    MIN_PLAYER_HEIGHT,
-  } = usePlayerAnimation();
+  // 0 Mini player
+  const expandProgress = useSharedValue(0);
+
+  const [miniPointerEvents, setMiniPointerEvents] = useState<'auto' | 'none'>('auto');
+  const [fullPointerEvents, setFullPointerEvents] = useState<'auto' | 'none'>('none');
+
+  const toggleExpand = () => {
+    expandProgress.value = withSpring(expandProgress.value > 0.5 ? 0 : 1, {
+      damping: 20,
+      stiffness: 90,
+    });
+  };
+
+  useAnimatedReaction(
+    () => expandProgress.value,
+    (current) => {
+      if (current < 0.5) {
+        // mini show
+        runOnJS(setMiniPointerEvents)('auto');
+        runOnJS(setFullPointerEvents)('none');
+      } else {
+        // full show
+        runOnJS(setMiniPointerEvents)('none');
+        runOnJS(setFullPointerEvents)('auto');
+      }
+    }
+  );
+
+  const miniStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(expandProgress.value, [0, 0.3], [1, 0], Extrapolation.CLAMP),
+    height: MIN_HEIGHT,
+    bottom: BOTTOM_TAB_HEIGHT + insets.bottom,
+  }));
+
+   const fullStyle = useAnimatedStyle(() => {
+    const h = interpolate(
+      expandProgress.value,
+      [0, 1],
+      [MIN_HEIGHT, screenHeight + BOTTOM_TAB_HEIGHT + insets.bottom],
+      Extrapolation.CLAMP
+    );
+    
+    const bottom = interpolate(
+      expandProgress.value,
+      [0, 1],
+      [BOTTOM_TAB_HEIGHT + insets.bottom, 0],
+      Extrapolation.CLAMP
+    );
+    
+    return {
+      opacity: interpolate(expandProgress.value, [0.7, 1], [0, 1], Extrapolation.CLAMP),
+      height: h,
+      bottom,
+    };
+  });
+
 
   return (
-    <View style={styles.container}>
-      {children}
+    <>
+      {/* MINI PLAYER */}
+      <Animated.View 
+        style={[
+          styles.root, 
+          miniStyle,
+          { backgroundColor: "rgba(0,0,0,0.4)" }
+        ]}
+        pointerEvents={miniPointerEvents}
+      >
+        <MiniPlayer onTap={toggleExpand} />
+      </Animated.View>
 
-      {currentTrack && (
-        <Animated.View style={[styles.playerContainer, animatedContainerStyle]}>
-          
-          {/* Widok Pełnoekranowy (Rozwinięty) */}
-          <Animated.View style={[StyleSheet.absoluteFill, expandedOpacityStyle, styles.fullScreenBg]}>
-            <Animated.ScrollView
-              bounces={false}
-              scrollEventThrottle={16}
-              contentContainerStyle={styles.scrollContent}
-            >
-              <View className="items-center justify-center p-8">
-                <Text className="text-white font-bold text-xl">{currentTrack.title}</Text>
-                <Text className="text-neutral-400 mt-2">{currentTrack.artist}</Text>
-              </View>
-            </Animated.ScrollView>
-          </Animated.View>
-
-          {/* Widok Mini-Playera (Zwinięty na dole) */}
-          <Animated.View style={[collapseOpacityStyle, { height: MIN_PLAYER_HEIGHT }]}>
-            <MiniPlayer />
-          </Animated.View>
-
-        </Animated.View>
-      )}
-    </View>
+      {/* FULL PLAYER  */}
+      <Animated.View 
+        style={[
+          styles.root,
+          fullStyle,
+          { backgroundColor: "rgba(0,0,0,0.9)" }
+        ]}
+        pointerEvents={fullPointerEvents}
+      >
+        <FullScreenPlayer 
+          onClose={toggleExpand}
+          expandProgress={expandProgress}
+        />
+      </Animated.View>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1 
-  },
-  playerContainer: {
+  root: {
     position: 'absolute',
-    width: '100%',
-    bottom: 0,
-    zIndex: 99,
+    left: 0,
+    right: 0,
     overflow: 'hidden',
-    backgroundColor: '#171717',
-  },
-  fullScreenBg: { 
-    backgroundColor: '#0a0a0a' 
-  },
-  scrollContent: { 
-    paddingTop: 60, 
-    paddingBottom: 40 
   },
 });

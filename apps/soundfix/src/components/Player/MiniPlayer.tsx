@@ -1,14 +1,22 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Image, StyleSheet } from 'react-native';
 import { usePlayerStore } from '../../store/usePlayerStore';
-import Icon from 'react-native-vector-icons/Ionicons';
 import { MEDIA_URL } from '../../config/env';
-import { useIsPlaying, useProgress } from '@rntp/player';
+import { useProgress } from '@rntp/player';
+import LinearGradient from 'react-native-linear-gradient';
+import {MovingText} from '../MovingText';
+import { PlayButton } from './PlayButton';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { runOnJS } from 'react-native-reanimated';
 
-export const MiniPlayer = () => {
-  const { setIsExpanded, play, pause, currentTrack } = usePlayerStore();
-  const isPlaying = useIsPlaying()
-    const { position, duration } = useProgress();
+type Props = {
+  onTap: () => void;
+};
+
+export const MiniPlayer = ({ onTap }: Props) => {
+  const [colors, setColors] = useState(['#666', '#666']);
+  const { currentTrack } = usePlayerStore();
+  const { position, duration } = useProgress();
 
   if (!currentTrack) {
     return null;
@@ -24,53 +32,107 @@ export const MiniPlayer = () => {
     return '0%';
   };
 
-  return (
-   
-    <TouchableOpacity
-      activeOpacity={0.9}
-      onPress={() => setIsExpanded(true)}
-      className="absolute bottom-[125px] left-2 right-2 h-14 bg-neutral-900/95 rounded-md flex-row items-center px-3 border border-neutral-800 shadow-lg"
-    >
+  const pan = Gesture.Pan()
+    .onEnd((event) => {
+      if (event.translationY < -50) {
+        runOnJS(onTap)();
+      }
+    });
 
-   <View className="w-10 h-10 rounded bg-neutral-800 overflow-hidden mr-3 justify-center items-center">
-        {isVideo ? (
-          <View className="bg-neutral-800 w-full h-full justify-center items-center">
-            <Icon name="videocam" size={18} color="#1DB954" />
-          </View>
-        ) : (
+  const tap = Gesture.Tap().onEnd(() => {
+    runOnJS(onTap)();
+  });
+  const gesture = Gesture.Race(pan, tap);
+
+  return (
+
+    <View style={{ flex: 1, flexDirection: 'row' }}>
+       <GestureDetector gesture={gesture}>
+      <View style={{ flexGrow: 1 }}>
+        <LinearGradient colors={colors} style={s.container} >
+          <View style={s.flexRowBetween}>
+              
+            <View style={s.flexRow}>
           <Image
             source={{ uri: `${MEDIA_URL}/${currentTrack.coverUrl}` || 'https://via.placeholder.com/150' }}
-            className="w-full h-full resize-cover"
-          />
-        )}
-      </View>
-    
-{/* Info artist */}
-      <View className="flex-1 justify-center">
-        <Text className="text-white font-semibold text-xs" numberOfLines={1}>
-          {currentTrack.title}
-        </Text>
-        <Text className="text-neutral-400 text-[11px]" numberOfLines={1}>
-          {currentTrack.artist}
-        </Text>
-      </View>
+            style={s.img}
+           />
+           <View style={{ width: '68%' }}>
+            <MovingText text={currentTrack.title} style={{ fontWeight: 'bold', fontSize: 16}} />
 
-      <TouchableOpacity onPress={() => {isPlaying ? pause() : play()}} className="p-2">
-        <Icon
-          name={isPlaying ? 'pause-sharp' : 'play-sharp'}
-          size={22}
-          color="#FFFFFF"
-        />
-      </TouchableOpacity>
-      <View className='absolute bottom-0 left-2 right-2 h-[3px] w-full'>
-            <View className='h-[3px] bg-white/25'>
+            <Text numberOfLines={1} style={{paddingHorizontal: 6, opacity: 5}}>{currentTrack.artist}</Text>
+           </View>
+            </View>
+          </View>
+
+          <View style={s.progressContainer}>
+            <View style={s.progressBackground}>
               <View
-                style={[{height: 3, backgroundColor:'#fff', width: calculateProgressWidth() }]}
+                style={[s.progressBar, { width: calculateProgressWidth() }]}
               />
             </View>
           </View>
-     </TouchableOpacity>
+        </LinearGradient>
+      </View>
+    </GestureDetector>
+      <View style={s.playButton}>
+         <PlayButton />
+ </View>
+    </View>
+ 
      
        
   );
 };
+
+const s = StyleSheet.create({
+  container: {
+    paddingTop: 4,
+    height: 60,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 5,
+    overflow: 'hidden',
+    width: '100%',
+  },
+  img: {
+    borderRadius: 5,
+    width: 45,
+    height: 45,
+    resizeMode: 'cover',
+  },
+  flexRowBetween: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    width: '100%',
+  },
+  flexRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  progressContainer: {
+    height: 2,
+    width: '100%',
+    marginTop: 5,
+  },
+  progressBackground: {
+    height: 3,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+  },
+  progressBar: {
+    height: 3,
+    backgroundColor: '#fff',
+  },
+  playButton: {
+    position: 'absolute',
+    right: 10,
+    top: 18,
+    transform: [{ translateY: -15 }],
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  }
+});

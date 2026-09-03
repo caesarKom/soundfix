@@ -6,7 +6,6 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { HomeScreen } from '../screens/HomeScreen';
 import { SearchScreen } from '../screens/SearchScreen';
 import { LibraryScreen } from '../screens/LibraryScreen';
-import { MiniPlayer } from '../components/Player/MiniPlayer';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export type MainTabParamList = {
@@ -33,8 +32,9 @@ const renderLibraryIcon = ({ color, size }: { focused: boolean; color: string; s
 export const TabNavigator = () => {
     const insets = useSafeAreaInsets();
   return (
+   
     <View className="flex-1 bg-slate-950">
-        
+           
       <Tab.Navigator
         screenOptions={{
           tabBarStyle: {
@@ -76,9 +76,7 @@ export const TabNavigator = () => {
           }}
         />
       </Tab.Navigator>
-
-{/* <MiniPlayer /> */}
-      
     </View>
+   
   );
 };

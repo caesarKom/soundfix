@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createDrawerNavigator, DrawerContentComponentProps } from '@react-navigation/drawer';
@@ -9,6 +9,8 @@ import { AuthNavigator } from './AuthNavigator';
 import { TabNavigator } from './TabNavigator';
 import { ProfileScreen } from '../screens/auth/ProfileScreen';
 import { CustomDrawerContent } from './CustomDrawerContent';
+import { SplashScreen } from '../screens/SplashScreen';
+
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -37,10 +39,24 @@ const AppDrawerNavigator = () => {
   );
 };
 
-export const RootNavigator = () => {
+const RootNavigator = () => {
+  const [isInitializing, setIsInitializing] = useState(true);
   const accessToken = useAuthStore((state) => state.accessToken);
 
-  useMe();
+  const { isLoading: isMeLoading } = useMe();
+
+  useEffect(() => {
+    // Hide splash screen after state check completed
+    const timer = setTimeout(() => {
+      setIsInitializing(false);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isInitializing && isMeLoading) {
+    return <SplashScreen onFinish={() => setIsInitializing(false)} />;
+  }
 
   return (
     <NavigationContainer>
@@ -55,3 +71,5 @@ export const RootNavigator = () => {
     </NavigationContainer>
   );
 };
+
+export default RootNavigator

@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../services/api';
 import { useAuthStore } from '../store/useAuthStore';
 import { LoginDto, LoginResponse, RegisterDto, VerifyOtpDto } from '../types/auth';
-import { token_storage } from '../store/storage';
 
 export const useMe = () => {
     const setUser = useAuthStore((state) => state.setUser);
@@ -30,9 +29,10 @@ export const useLoginMutation = () => {
     },
     onSuccess: (data) => {
       setTokens(data.accessToken, data.refreshToken);
-      token_storage.set('accessToken', data.accessToken);
-      token_storage.set('refreshToken', data.refreshToken);
     },
+    onError: (error) => {
+      console.error('Login', error);
+    }
   });
 };
 

@@ -7,6 +7,7 @@ import { HomeScreen } from '../screens/HomeScreen';
 import { SearchScreen } from '../screens/SearchScreen';
 import { LibraryScreen } from '../screens/LibraryScreen';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BOTTOM_TAB_HEIGHT } from '../utils/constants';
 
 export type MainTabParamList = {
   HomeTab: undefined;
@@ -43,7 +44,7 @@ export const TabNavigator = () => {
             paddingBottom: insets.bottom,
             paddingTop: 8,
             zIndex: 5,
-            height: 60 + insets.bottom,
+            height: BOTTOM_TAB_HEIGHT + insets.bottom,
           },
           headerShown: false,
           tabBarActiveTintColor: '#38bdf8',

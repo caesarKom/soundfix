@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { MEDIA_URL } from '../../config/env';
@@ -6,8 +6,13 @@ import { useProgress } from '@rntp/player';
 import LinearGradient from 'react-native-linear-gradient';
 import {MovingText} from '../MovingText';
 import { PlayButton } from './PlayButton';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { GestureDetector, usePanGesture, useSimultaneousGestures, useTapGesture } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
+import ImageColors from 'react-native-image-colors';
+import { darkColor } from '../../utils/constants';
+import { Platform } from 'react-native';
+import { noSongImg, notImage } from '../../utils/images';
+import { scheduleOnRN } from 'react-native-worklets';
 
 type Props = {
   onTap: () => void;
@@ -18,11 +23,29 @@ export const MiniPlayer = ({ onTap }: Props) => {
   const { currentTrack } = usePlayerStore();
   const { position, duration } = useProgress();
 
-  if (!currentTrack) {
-    return null;
-  }
+  useEffect(() => {
+    if (!currentTrack || !currentTrack.coverUrl) {
+      setColors(['#666', '#666']);
+      return;
+    }
 
-  const isVideo = currentTrack.mimeType?.startsWith('video/');
+    const url = `${MEDIA_URL}/${currentTrack.coverUrl}` || `${notImage}`
+    ImageColors
+      .getColors(url, {
+        fallback: '#666',
+        cache: true,
+        key: url,
+      })
+      .then((c: any) => {
+        const color = Platform.OS === 'ios' ? c.secondary : c.vibrant;
+        const darkenedSecondary = darkColor(color);
+        setColors([darkenedSecondary, darkenedSecondary]);
+      })
+      .catch((err) => {
+        console.warn('Nie udało się pobrać kolorów okładki:', err.message);
+        setColors(['#666', '#666']);
+      });
+  }, [currentTrack]);
 
    const calculateProgressWidth: any = () => {
     if (duration > 0) {
@@ -32,17 +55,25 @@ export const MiniPlayer = ({ onTap }: Props) => {
     return '0%';
   };
 
-  const pan = Gesture.Pan()
-    .onEnd((event) => {
+  const pan = usePanGesture({
+    onDeactivate: (event) => {
       if (event.translationY < -50) {
-        runOnJS(onTap)();
+        scheduleOnRN(onTap);
       }
-    });
-
-  const tap = Gesture.Tap().onEnd(() => {
-    runOnJS(onTap)();
+    },
   });
-  const gesture = Gesture.Race(pan, tap);
+
+  const tap = useTapGesture({
+    onDeactivate: () => {
+      scheduleOnRN(onTap);
+    },
+  });
+
+  const gesture = useSimultaneousGestures(pan, tap);
+
+   if (!currentTrack) {
+    return null;
+  }
 
   return (
 
@@ -54,7 +85,7 @@ export const MiniPlayer = ({ onTap }: Props) => {
               
             <View style={s.flexRow}>
           <Image
-            source={{ uri: `${MEDIA_URL}/${currentTrack.coverUrl}` || 'https://via.placeholder.com/150' }}
+            source={{ uri: `${MEDIA_URL}/${currentTrack.coverUrl}` || noSongImg }}
             style={s.img}
            />
            <View style={{ width: '68%' }}>

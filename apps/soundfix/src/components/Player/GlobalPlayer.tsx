@@ -18,7 +18,7 @@ export const GlobalPlayer = () => {
   const MIN_HEIGHT = 60;
   const MAX_HEIGHT = screenHeight
   const insets = useSafeAreaInsets();
-
+  
   // 0 Mini player
   const expandProgress = useSharedValue(0);
 

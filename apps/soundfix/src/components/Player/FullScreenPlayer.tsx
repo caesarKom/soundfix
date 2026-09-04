@@ -7,6 +7,9 @@ import { useState } from 'react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { screenHeight, screenWidth } from '../../utils/constants';
 import { MEDIA_URL } from '../../config/env';
+import { usePlayerColors } from './usePlayerColors';
+import VideoPlayer from './VideoPlayer';
+import ControlsAndDetails from './ControlsAndDetails';
 
 type Props = {
   onClose: () => void;
@@ -17,7 +20,7 @@ const FullScreenPlayer = ({onClose}:Props) => {
     const [colors, setColors] = useState(['#666', '#666']);
      const translateY = useSharedValue(0);
   const contextY = useSharedValue(0);
-
+ const { primary, secondary } = usePlayerColors()
   const currentTrack = usePlayerStore((state) => state.currentTrack);
 
 const pan = usePanGesture({
@@ -56,12 +59,12 @@ const pan = usePanGesture({
         style={styles.gradient}
         colors={[...colors, 'rgba(0,0,0,0.9)']}
       />
-        {/* Pasek do przeciągania */}
+        {/* Bar drag handle */}
         <View style={styles.dragHandle}>
           <View style={styles.dragIndicator} />
         </View>
 
-        {currentTrack?.mimeType?.includes("audio") ? (
+        {currentTrack?.mimeType?.includes("audio/") ? (
           <View style={styles.imageContainer}>
           <Image
             source={{ uri: `${MEDIA_URL}/${currentTrack?.coverUrl}` || "" }} 
@@ -70,16 +73,16 @@ const pan = usePanGesture({
         </View>
         ) : (
           <View>
-            {/* <VideoPlayer video_uri={currentTrack?.url} /> */}
-            <Text>VideoPlayer video_uri={currentTrack?.url}</Text>
+            {/* Video player */}
+            <VideoPlayer video_uri={currentTrack?.url} />
           </View>
         )}
         
 
         <View style={styles.albumContainer} />
 
-        {/* Sterowanie */}
-        {/* <ControlsAndDetails /> */}
+   
+        <ControlsAndDetails/>
       </Animated.View>
     </GestureDetector>
   )

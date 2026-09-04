@@ -17,10 +17,7 @@ export const HomeScreen = () => {
   const { user } = useAuthStore.getState();
   const navigation = useNavigation<DrawerNavigationProp<any>>();
   
- const currentTrack = usePlayerStore((state) => state.currentTrack);
-  
-  const playTrackFromLoadedQueue = usePlayerStore((state) => state.playTrackFromLoadedQueue);
-  const loadQueueWithoutPlaying = usePlayerStore((state) => state.loadQueueWithoutPlaying);
+ const {currentTrack,setAllTracks,playTrackFromLoadedQueue} = usePlayerStore()
 
 
   const { data: musicData, isLoading, isError, refetch, isRefetching } = useQuery({
@@ -33,7 +30,7 @@ export const HomeScreen = () => {
 
    useEffect(() => {
     if (Array.isArray(musicData) && musicData.length > 0) {
-      loadQueueWithoutPlaying(musicData);
+      setAllTracks(musicData);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [musicData?.length]);

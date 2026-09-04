@@ -1,6 +1,6 @@
 import { Image, Platform, StatusBar, StatusBarProps, StyleSheet, Text, View } from 'react-native'
 import Animated, { Extrapolation, interpolate, runOnJS, SharedValue, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { GestureDetector, usePanGesture } from 'react-native-gesture-handler';
 
 import LinearGradient from 'react-native-linear-gradient';
 import { useState } from 'react';
@@ -20,23 +20,26 @@ const FullScreenPlayer = ({onClose}:Props) => {
 
   const currentTrack = usePlayerStore((state) => state.currentTrack);
 
-const pan = Gesture.Pan()
-  .activeOffsetY(10) // ← NOWE: gest aktywuje się po 10px w dół
-    .failOffsetY(-10) // ← zablokuj gest w górę
-    .onUpdate((event) => {
-      // ← tylko w dół
-      if (event.translationY > 0) {
-        translateY.value = event.translationY;
-      }
-    })
-    .onEnd((event) => {
-      if (event.translationY > 150) {
-        translateY.value = withSpring(0);
-        runOnJS(onClose)();
-      } else {
-        translateY.value = withSpring(0);
-      }
-    });
+const pan = usePanGesture({
+  activeOffsetY: 10,
+  failOffsetY: -10,
+
+  onUpdate: (event) => {
+    // Only down
+    if (event.translationY > 0) {
+      translateY.value = event.translationY;
+    }
+  },
+
+  onDeactivate: (event) => {
+    if (event.translationY > 150) {
+      translateY.value = withSpring(0);
+      runOnJS(onClose)();
+    } else {
+      translateY.value = withSpring(0);
+    }
+  },
+});
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
@@ -47,7 +50,7 @@ const pan = Gesture.Pan()
   return (
     <GestureDetector gesture={pan}>
       <Animated.View style={[styles.container, animatedStyle]}>
-        {/* USUŃ ScrollView – niepotrzebny */}
+     
         <StatusBar barStyle="light-content" {...({ backgroundColor: 'transparent' } as StatusBarProps)} />
         <LinearGradient
         style={styles.gradient}
@@ -95,7 +98,7 @@ const styles = StyleSheet.create({
     height: 4,
     backgroundColor: 'rgba(255,255,255,0.3)',
     borderRadius: 2,
-    marginTop: 40
+    marginTop: 70
   },
   top: { alignItems: 'center', marginBottom: 24 },
   coverBig: { width: screenWidth * 0.7, height: screenWidth * 0.7, borderRadius: 8 },

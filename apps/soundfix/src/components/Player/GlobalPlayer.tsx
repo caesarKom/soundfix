@@ -57,7 +57,7 @@ export const GlobalPlayer = () => {
     const h = interpolate(
       expandProgress.value,
       [0, 1],
-      [MIN_HEIGHT, screenHeight + BOTTOM_TAB_HEIGHT + insets.bottom],
+      [MIN_HEIGHT, screenHeight + BOTTOM_TAB_HEIGHT],
       Extrapolation.CLAMP
     );
     

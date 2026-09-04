@@ -38,10 +38,16 @@ export const playbackSession = () => {
   });
 
   // Handling network errors (e.g. temporary lack of coverage in the car)
-  TrackPlayer.addEventListener(Event.PlaybackError, ({ code, message }) => {
-    console.error(`[Audio Error ${code}]: ${message}`);
-    if (code === 'network') {
-      TrackPlayer.retry(); 
+   TrackPlayer.addEventListener(Event.PlaybackError, ({ code, message }) => {
+    if (code === 'network' || message.toLowerCase().includes('source')) {
+
+      setTimeout(() => {
+        TrackPlayer.retry();
+      }, 300);
+      return;
     }
+    
+    console.error(`[Audio Error ${code}]: ${message}`);
   });
 };
+

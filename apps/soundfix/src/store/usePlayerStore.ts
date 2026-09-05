@@ -47,6 +47,7 @@ interface PlayerState {
   allTracks: Track[];
 
   getSecuredUrl: (trackId: string) => Promise<string>;
+  getCurrentTrackUrl: () => Promise<string>;
 
   // Actions
   setAllTracks: (tracks: Track[]) => void;
@@ -89,6 +90,17 @@ export const usePlayerStore = create<PlayerState>()(
           console.error(`Nie udało się pobrać bezpiecznego tokenu dla utworu ${trackId}:`, error);
           throw error;
         }
+      },
+
+      getCurrentTrackUrl: async (): Promise<string> => {
+        const { currentTrack, getSecuredUrl } = get();
+          if (!currentTrack) return '';
+          try {
+
+          return await getSecuredUrl(currentTrack.id);
+          } catch {
+            return '';
+          }
       },
 
       setAllTracks: (tracks: Track[]) => {

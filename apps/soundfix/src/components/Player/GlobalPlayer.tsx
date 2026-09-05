@@ -8,17 +8,18 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
-  runOnJS,
   useAnimatedReaction,
 } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 import { BOTTOM_TAB_HEIGHT, screenHeight } from '../../utils/constants';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { usePlayerColors } from './usePlayerColors';
 
 export const GlobalPlayer = () => {
   const MIN_HEIGHT = 60;
   const MAX_HEIGHT = screenHeight
   const insets = useSafeAreaInsets();
-  
+   const { primary, secondary } = usePlayerColors();
   // 0 Mini player
   const expandProgress = useSharedValue(0);
 
@@ -37,12 +38,12 @@ export const GlobalPlayer = () => {
     (current) => {
       if (current < 0.5) {
         // mini show
-        runOnJS(setMiniPointerEvents)('auto');
-        runOnJS(setFullPointerEvents)('none');
+        scheduleOnRN(() => setMiniPointerEvents('auto'));
+        scheduleOnRN(() => setFullPointerEvents('none'));
       } else {
         // full show
-        runOnJS(setMiniPointerEvents)('none');
-        runOnJS(setFullPointerEvents)('auto');
+        scheduleOnRN(() => setMiniPointerEvents('none'));
+        scheduleOnRN(() => setFullPointerEvents('auto'));
       }
     }
   );
@@ -102,6 +103,7 @@ export const GlobalPlayer = () => {
         <FullScreenPlayer 
           onClose={toggleExpand}
           expandProgress={expandProgress}
+          colors={{ primary, secondary }} 
         />
       </Animated.View>
     </>

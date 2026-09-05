@@ -6,6 +6,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import RootNavigator from './src/navigation/RootNavigator';
 import { queryClient } from './queryClient';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import Toast from 'react-native-toast-message';
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
         />
         <GestureHandlerRootView>
           <RootNavigator />
+          <Toast />
         </GestureHandlerRootView>
       </QueryClientProvider>
     </SafeAreaProvider>

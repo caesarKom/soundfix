@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { MEDIA_URL } from '../../config/env';
@@ -7,7 +7,6 @@ import LinearGradient from 'react-native-linear-gradient';
 import {MovingText} from '../MovingText';
 import { PlayButton } from './PlayButton';
 import { GestureDetector, usePanGesture, useSimultaneousGestures, useTapGesture } from 'react-native-gesture-handler';
-import { runOnJS } from 'react-native-reanimated';
 import ImageColors from 'react-native-image-colors';
 import { darkColor } from '../../utils/constants';
 import { Platform } from 'react-native';
@@ -22,6 +21,26 @@ export const MiniPlayer = ({ onTap }: Props) => {
   const [colors, setColors] = useState(['#666', '#666']);
   const { currentTrack } = usePlayerStore();
   const { position, duration } = useProgress();
+
+  const handleTogglePlayer = useCallback(() => {
+    onTap();
+  }, [onTap]);
+
+  const pan = usePanGesture({
+    onDeactivate: (event) => {
+      if (event.translationY < -50) {
+        scheduleOnRN(handleTogglePlayer);
+      }
+    },
+  });
+
+  const tap = useTapGesture({
+    onDeactivate: () => {
+      scheduleOnRN(handleTogglePlayer);
+    },
+  });
+
+  const gesture = useSimultaneousGestures(pan, tap);
 
   useEffect(() => {
     if (!currentTrack || !currentTrack.coverUrl) {
@@ -47,6 +66,10 @@ export const MiniPlayer = ({ onTap }: Props) => {
       });
   }, [currentTrack]);
 
+   if (!currentTrack) {
+    return null;
+  }
+
    const calculateProgressWidth: any = () => {
     if (duration > 0) {
       const procentage = (position / duration) * 100;
@@ -54,26 +77,6 @@ export const MiniPlayer = ({ onTap }: Props) => {
     }
     return '0%';
   };
-
-  const pan = usePanGesture({
-    onDeactivate: (event) => {
-      if (event.translationY < -50) {
-        scheduleOnRN(onTap);
-      }
-    },
-  });
-
-  const tap = useTapGesture({
-    onDeactivate: () => {
-      scheduleOnRN(onTap);
-    },
-  });
-
-  const gesture = useSimultaneousGestures(pan, tap);
-
-   if (!currentTrack) {
-    return null;
-  }
 
   return (
 

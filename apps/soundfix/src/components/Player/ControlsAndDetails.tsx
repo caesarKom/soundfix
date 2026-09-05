@@ -23,25 +23,17 @@ const formatTime = (seconds: number) => {
 
 export const ControlsAndDetails = () => {
   const [icon, setIcon] = useState<any>();
-
-  // ✅ POPRAWKA: Pobieramy dane utworu i akcje bezpośrednio z Twojego stora Zustand
-  const currentTrack = usePlayerStore((state) => state.currentTrack);
-  const skipToNext = usePlayerStore((state) => state.skipToNext);
-  const skipToPrevious = usePlayerStore((state) => state.skipToPrevious);
-
-  // ✅ POPRAWKA: Pobieramy aktualną pozycję odtwarzania z natywnego hooka v5+
+  const {currentTrack, skipToNext, skipToPrevious} = usePlayerStore()
   const { position, duration } = useProgress();
 
-  // Generowanie grafiki kropki (thumb) dla suwaka na Androidzie
   useEffect(() => {
     MaterialIcon.getImageSource('circle', 15, 'white').then(setIcon);
   }, []);
 
-  // ✅ POPRAWKA: Poprawne przewijanie utworu (wartość od 0 do 1 przemnożona przez sekundy)
   const handleSeek = async (value: number) => {
     if (duration > 0) {
       const targetSeconds = value * duration;
-      await TrackPlayer.seekTo(targetSeconds);
+      TrackPlayer.seekTo(targetSeconds);
     }
   };
 

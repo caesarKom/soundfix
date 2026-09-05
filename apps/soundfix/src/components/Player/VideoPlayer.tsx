@@ -10,6 +10,7 @@ const VideoPlayer = ({ video_uri }: { video_uri: any }) => {
   return (
     <View>
       <Video
+      ref={videoRef}
         source={{ uri: video_uri }}
         ignoreSilentSwitch="ignore"
         playWhenInactive={false}

@@ -113,20 +113,29 @@ export const usePlayerStore = create<PlayerState>()(
 
       // CLICK ON A SONG FROM THE LIST -> DOWNLOAD ON THE FLY AND START
       playTrackFromLoadedQueue: async (trackId: string) => {
-        const { allTracks, getSecuredUrl } = get();
-        const track:any= allTracks.findIndex(t => t.id === trackId);
-        if (track < 0) return;
-
-        TrackPlayer.skipToIndex(track)
-
-        const signedUrl = await getSecuredUrl(track.id);
-        const currentMediaItem = convertTrackToCleanMedia(track);
-        currentMediaItem.url = signedUrl;
-
-        set({ currentTrack: track, isPlaying: true });
-
-        TrackPlayer.play()
-      },
+  const { allTracks, getSecuredUrl } = get();
+  const trackIndex = allTracks.findIndex((t) => t.id === trackId);
+  if (trackIndex < 0) return;
+ 
+  const track = allTracks[trackIndex];
+ 
+  TrackPlayer.skipToIndex(trackIndex);
+ 
+  try {
+    const signedUrl = await getSecuredUrl(track.id);
+    const updatedItem = convertTrackToCleanMedia(track);
+    updatedItem.url = signedUrl;
+ 
+    // Without this, the native queue keeps whatever placeholder URL was set
+    // in setAllTracks, and playback would fail or use a stale token.
+    TrackPlayer.replaceMediaItem(trackIndex, updatedItem);
+ 
+    set({ currentTrack: track, isPlaying: true });
+    TrackPlayer.play();
+  } catch (error) {
+    console.error(`Failed to start track ${trackId}:`, error);
+  }
+},
 
       play: async () => {
         const { currentTrack, getSecuredUrl } = get();

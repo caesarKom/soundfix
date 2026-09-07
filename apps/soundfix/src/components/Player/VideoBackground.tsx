@@ -7,9 +7,6 @@ import { StyleProp } from 'react-native';
 
 interface VideoBackgroundProps {
   videoUri: string;
-  // Positioning is left to the caller (e.g. StyleSheet.absoluteFillObject),
-  // same as the LinearGradient it replaces in FullScreenPlayer.
-  style?: StyleProp<ViewStyle>;
 }
 
 /**
@@ -19,14 +16,18 @@ interface VideoBackgroundProps {
  * the current track's mimeType is "video/*" (Spotify Canvas style). A dark
  * gradient is layered on top so the title/controls stay readable.
  */
-export const VideoBackground: React.FC<VideoBackgroundProps> = ({ videoUri, style }) => {
+export const VideoBackground: React.FC<VideoBackgroundProps> = ({ videoUri }) => {
   const videoRef = useRef<VideoRef>(null);
 
+  if (!videoUri) return <View style={styles.videoContainer} />;
+
   return (
-    <View style={style}>
+    <View style={styles.videoContainer}>
       <Video
-        ref={videoRef}
-        source={{ uri: videoUri }}
+        source={{ uri: videoUri, type: 'mp4', headers: {
+      'Range': 'bytes=0-', 
+    } }}
+    ref={videoRef}
         ignoreSilentSwitch="ignore"
         playWhenInactive={false}
         playInBackground={false}
@@ -38,6 +39,7 @@ export const VideoBackground: React.FC<VideoBackgroundProps> = ({ videoUri, styl
         hideShutterView
         resizeMode="cover"
         shutterColor="transparent"
+        onError={(error) => console.log('❌ Błąd odtwarzania wideo:', error)}
       />
       <LinearGradient
         colors={[

@@ -10,6 +10,7 @@ import { MEDIA_URL } from '../config/env';
 import { useQuery } from '@tanstack/react-query';
 import { Track, usePlayerStore } from '../store/usePlayerStore';
 import { api } from '../services/api';
+import { noSongImg } from '../utils/images';
 
 
 export const HomeScreen = () => {
@@ -38,7 +39,7 @@ export const HomeScreen = () => {
   const { data: PlayListData } = useQuery({
     queryKey: ['playlists'],
     queryFn: async () => {
-      const res = await api.get('/music/playlists');
+      const res = await api.get('/playlists');
       return Array.isArray(res.data) ? res.data : (res.data?.data || []);
     },
   });
@@ -104,7 +105,7 @@ export const HomeScreen = () => {
               >
                 <Image
                   source={{
-                    uri: track.coverUrl ? `${MEDIA_URL}/${track.coverUrl}` : 'https://via.placeholder.com/150',
+                    uri: track.coverUrl ? `${MEDIA_URL}/${track.coverUrl}` : noSongImg,
                   }}
                   className="w-14 h-14 resize-cover"
                 />
@@ -128,7 +129,7 @@ export const HomeScreen = () => {
                 <TouchableOpacity key={playlist.id} className="mr-4 w-36" activeOpacity={0.7}>
                   <Image
                     source={{
-                      uri: playlist.coverUrl ? `${MEDIA_URL}/${playlist.coverUrl}` : 'https://via.placeholder.com/300',
+                      uri: playlist.coverUrl ? `${MEDIA_URL}/${playlist.coverUrl}` : noSongImg,
                     }}
                     className="w-36 h-36 rounded-md mb-2 bg-neutral-900"
                   />
@@ -161,7 +162,7 @@ export const HomeScreen = () => {
                 <View className="relative">
                   <Image
                     source={{
-                      uri: track.coverUrl ? `${MEDIA_URL}/${track.coverUrl}` : 'https://via.placeholder.com/300',
+                      uri: track.coverUrl ? `${MEDIA_URL}/${track.coverUrl}` : noSongImg,
                     }}
                     className="w-36 h-36 rounded-md mb-2 bg-neutral-900"
                   />

@@ -84,7 +84,7 @@ export class MusicService {
   id: string,
   range: string | undefined,
   res: Response,
-): Promise<StreamableFile> {
+): Promise<void> {
   const song = await this.prisma.music.findUnique({ where: { id } });
   if (!song) throw new NotFoundException('Song not found');
 
@@ -107,24 +107,27 @@ export class MusicService {
     const end = endStr ? parseInt(endStr, 10) : fileSize - 1;
     const chunkSize = end - start + 1;
 
-    res.status(206);
-    res.set({
+   
+    res.writeHead(206,{
       'Content-Range': `bytes ${start}-${end}/${fileSize}`,
       'Accept-Ranges': 'bytes',
       'Content-Length': chunkSize,
       'Content-Type': song.mimeType, // realny mimeType, nie sztywno audio/mpeg
     });
 
-    return new StreamableFile(createReadStream(filePath, { start, end }));
+   const stream = createReadStream(filePath, { start, end });
+    stream.pipe(res);
+    return;
   }
 
-  res.set({
+  res.writeHead(200, {
     'Content-Length': fileSize,
     'Content-Type': song.mimeType,
     'Accept-Ranges': 'bytes',
   });
 
-  return new StreamableFile(createReadStream(filePath));
+  const stream = createReadStream(filePath);
+  stream.pipe(res);
 }
 
   // 📝 Editing song data (Title, artist, album, visibility)

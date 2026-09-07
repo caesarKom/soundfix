@@ -31,7 +31,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
 
-@UseGuards(AuthGuard('jwt'))
+//@UseGuards(AuthGuard('jwt'))
 @Controller('music')
 export class MusicController {
   constructor(private readonly musicService: MusicService) {}
@@ -97,8 +97,8 @@ export class MusicController {
 async streamMusic(
   @Param('id') id: string,
   @Headers('range') range: string | undefined,
-  @Res({ passthrough: true }) res: Response,
-): Promise<StreamableFile> {
+  @Res() res: Response,
+) {
   return this.musicService.getAudioStream(id, range, res);
 }
 

@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, StyleSheet, Dimensions, StatusBar, View } from 'react-native';
+import { Modal, StyleSheet, StatusBar, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
   Easing,
+  interpolate,
+  Extrapolation,
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { MiniPlayer } from './MiniPlayer';
 import { FullScreenPlayer } from './FullScreenPlayer';
-import { screenHeight } from '../../utils/constants';
+import { BOTTOM_TAB_HEIGHT, screenHeight } from '../../utils/constants';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const ANIMATION_DURATION = 380;
 
@@ -28,10 +31,11 @@ const ANIMATION_DURATION = 380;
  * swipe down on the FullScreenPlayer) - see those components.
  */
 export const GlobalPlayer = () => {
+  const insets = useSafeAreaInsets();
   const currentTrack = usePlayerStore((state) => state.currentTrack);
   const isExpanded = usePlayerStore((state) => state.isExpanded);
   const setIsExpanded = usePlayerStore((state) => state.setIsExpanded);
-
+  const MIN_HEIGHT = 60;
   // Keeps the Modal mounted until the closing animation has fully finished,
   // otherwise the modal would just pop away instantly instead of sliding down.
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -60,7 +64,9 @@ export const GlobalPlayer = () => {
   }, [isExpanded, progress]);
 
   const miniPlayerAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: 1 - progress.value,
+    opacity: interpolate(progress.value, [0, 0.3], [1, 0], Extrapolation.CLAMP),
+    height: MIN_HEIGHT,
+    bottom: BOTTOM_TAB_HEIGHT + insets.bottom,
   }));
 
   const fullPlayerAnimatedStyle = useAnimatedStyle(() => ({
@@ -73,7 +79,7 @@ export const GlobalPlayer = () => {
   return (
     <>
       <Animated.View
-        style={miniPlayerAnimatedStyle}
+        style={[styles.root, miniPlayerAnimatedStyle]}
         pointerEvents={isExpanded ? 'none' : 'auto'}
       >
         <MiniPlayer />
@@ -98,6 +104,12 @@ export const GlobalPlayer = () => {
 };
 
 const styles = StyleSheet.create({
+  root: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    overflow: 'hidden',
+  },
   modalRoot: {
     flex: 1,
     backgroundColor: '#121212',

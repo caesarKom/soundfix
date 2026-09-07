@@ -6,25 +6,16 @@ import { usePlayerStore } from '../../store/usePlayerStore';
 import { MEDIA_URL } from '../../config/env';
 import { noSongImg } from '../../utils/images';
 import { scheduleOnRN } from 'react-native-worklets';
+import { useProgress } from '@rntp/player';
 
-const BAR_HEIGHT = 60;
-
-/**
- * MiniPlayer
- *
- * The collapsed, always-visible player bar (Spotify-style) shown just above
- * the bottom tab bar. Can be opened either by tapping it or, like in Spotify,
- * by swiping it upwards.
- */
 export const MiniPlayer = () => {
   const currentTrack = usePlayerStore((s) => s.currentTrack);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
-  const position = usePlayerStore((s) => s.position);
-  const duration = usePlayerStore((s) => s.duration);
   const play = usePlayerStore((s) => s.play);
   const pause = usePlayerStore((s) => s.pause);
   const skipToNext = usePlayerStore((s) => s.skipToNext);
   const setIsExpanded = usePlayerStore((s) => s.setIsExpanded);
+  const { duration, position } = useProgress()
 
   // Swiping up on the bar opens the full player, same as in Spotify.
   const swipeUpGesture = useFlingGesture({
@@ -54,11 +45,6 @@ export const MiniPlayer = () => {
         style={styles.container}
         onPress={() => scheduleOnRN(() => setIsExpanded(true))}>
 
-        {/* Thin progress line at the very top of the bar */}
-        <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
-        </View>
-
         <View style={styles.content}>
           <Image source={{ uri: `${MEDIA_URL}/${currentTrack.coverUrl}`||noSongImg }} style={styles.artwork} />
 
@@ -80,17 +66,21 @@ export const MiniPlayer = () => {
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
+      {/* Thin progress line at the very top of the bar */}
+        <View style={styles.progressTrack}>
+          <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
+        </View>
     </GestureDetector>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    height: BAR_HEIGHT,
+    paddingTop: 2,
+    height: 58,
     backgroundColor: '#282828',
-    borderRadius: 8,
-    marginHorizontal: 8,
-    marginBottom: 4,
+    borderRadius: 4,
+    paddingHorizontal: 5,
     overflow: 'hidden',
   },
   progressTrack: {

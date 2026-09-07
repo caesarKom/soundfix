@@ -43,7 +43,6 @@ interface PlayerState {
   isExpanded: boolean;
   position: number;
   duration: number;
-  queue: Track[];
   allTracks: Track[];
 
   getSecuredUrl: (trackId: string) => Promise<string>;
@@ -106,7 +105,7 @@ export const usePlayerStore = create<PlayerState>()(
       setAllTracks: (tracks: Track[]) => {
         set({ allTracks: tracks });
         TrackPlayer.clear()
-        TrackPlayer.addMediaItems(tracks.map(track => convertTrackToCleanMedia(track)))
+        TrackPlayer.setMediaItems(tracks.map(track => convertTrackToCleanMedia(track)))
         set({ currentTrack: tracks[0] });
       },
 
@@ -165,12 +164,12 @@ export const usePlayerStore = create<PlayerState>()(
 
       // (NEXT TRACK)
       skipToNext: async () => {
-        const { queue, getSecuredUrl } = get();
+        const { allTracks, getSecuredUrl } = get();
         const currentIndex = TrackPlayer.getActiveMediaItemIndex();
 
-        if (currentIndex !== null && currentIndex < queue.length - 1) {
+        if (currentIndex !== null && currentIndex < allTracks.length - 1) {
           const nextIndex = currentIndex + 1;
-          const nextTrack = queue[nextIndex];
+          const nextTrack = allTracks[nextIndex];
 
           try {
             const signedUrl = await getSecuredUrl(nextTrack.id);
@@ -192,12 +191,12 @@ export const usePlayerStore = create<PlayerState>()(
 
       // (PREVIOUS TRACK)
       skipToPrevious: async () => {
-        const { queue, getSecuredUrl } = get();
+        const { allTracks, getSecuredUrl } = get();
         const currentIndex = TrackPlayer.getActiveMediaItemIndex();
 
         if (currentIndex !== null && currentIndex > 0) {
           const prevIndex = currentIndex - 1;
-          const prevTrack = queue[prevIndex];
+          const prevTrack = allTracks[prevIndex];
 
           try {
             const signedUrl = await getSecuredUrl(prevTrack.id);
@@ -219,9 +218,9 @@ export const usePlayerStore = create<PlayerState>()(
 
       syncCurrentTrackWithNative: () => {
         const activeIndex = TrackPlayer.getActiveMediaItemIndex();
-        const { queue } = get();
-        if (activeIndex !== null && queue[activeIndex]) {
-          set({ currentTrack: queue[activeIndex], position: 0 });
+        const { allTracks } = get();
+        if (activeIndex !== null && allTracks[activeIndex]) {
+          set({ currentTrack: allTracks[activeIndex], position: 0 });
         }
       },
 
@@ -233,7 +232,7 @@ export const usePlayerStore = create<PlayerState>()(
           isExpanded: false,
           position: 0,
           duration: 0,
-          queue: [],
+          allTracks: [],
         });
       },
     }),

@@ -29,6 +29,7 @@ import { ControllsAndDetails } from './ControlsAndDetails';
 import { VideoBackground } from './VideoBackground';
 import { MEDIA_URL } from '../../config/env';
 import { noSongImg } from '../../utils/images';
+import { useIsPlaying, useProgress } from '@rntp/player';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const ARTWORK_SIZE = SCREEN_WIDTH - 64;
@@ -87,11 +88,11 @@ export const FullScreenPlayer = () => {
   const insets = useSafeAreaInsets();
 
   const currentTrack = usePlayerStore((s) => s.currentTrack);
-  const isPlaying = usePlayerStore((s) => s.isPlaying);
-  const position = usePlayerStore((s) => s.position);
-  const duration = usePlayerStore((s) => s.duration);
   const setIsExpanded = usePlayerStore((s) => s.setIsExpanded);
   const getCurrentTrackUrl = usePlayerStore((s) => s.getCurrentTrackUrl);
+  
+  const { duration, position } = useProgress()
+  const isPlaying = useIsPlaying()
 
   const imageUrl = `${MEDIA_URL}/${currentTrack?.coverUrl}` || noSongImg
   const backgroundColor = useArtworkColor(imageUrl);
@@ -99,25 +100,23 @@ export const FullScreenPlayer = () => {
   // "Canvas"-style looping video background, shown instead of the static
   // artwork when the current track's mimeType is video/*.
   const isVideoTrack = currentTrack?.mimeType?.startsWith('video/') ?? false;
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+ const [videoUrl, setVideoUrl] = useState<string>('');
 
-  useEffect(() => {
-    let isMounted = true;
+useEffect(() => {
+  let isMounted = true;
 
-    if (!isVideoTrack) {
-      setVideoUrl(null);
-      return;
+  if (isVideoTrack) {
+  getCurrentTrackUrl().then((url) => {
+    if (isMounted && url) {
+        console.log("Use effect url video ", url)
+      setVideoUrl(url);
     }
-
-    getCurrentTrackUrl().then((url) => {
-      if (isMounted) setVideoUrl(url || null);
-    });
-
-    return () => {
-      isMounted = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isVideoTrack, currentTrack?.id]);
+  });
+ }
+  return () => {
+    isMounted = false;
+  };
+}, [isVideoTrack, currentTrack?.url, getCurrentTrackUrl]);
 
   const closePlayer = useCallback(() => {
     setIsExpanded(false);
@@ -176,8 +175,8 @@ export const FullScreenPlayer = () => {
     <Animated.View style={[styles.flex, dragAnimatedStyle]}>
       {/* Background: looping video "canvas" for video tracks, color-washed
           gradient extracted from the artwork otherwise. */}
-      {isVideoTrack && videoUrl ? (
-        <VideoBackground videoUri={videoUrl} style={StyleSheet.absoluteFill} />
+      {isVideoTrack && videoUrl && videoUrl.trim() !== '' ? (
+        <VideoBackground videoUri={videoUrl} />
       ) : (
         <LinearGradient
           colors={[backgroundColor, '#121212']}

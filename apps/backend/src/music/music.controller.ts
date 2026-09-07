@@ -31,7 +31,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
 
-//@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'))
 @Controller('music')
 export class MusicController {
   constructor(private readonly musicService: MusicService) {}

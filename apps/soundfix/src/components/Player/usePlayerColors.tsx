@@ -1,60 +1,51 @@
-import { useEffect, useState } from 'react';
-import { Platform } from 'react-native';
-import ImageColors from 'react-native-image-colors';
-import TrackPlayer, { Event } from '@rntp/player';
-import { MEDIA_URL } from '../../config/env';
+import { useEffect, useState } from "react";
+import ImageColors from "react-native-image-colors";
 
-type Colors = { primary: string; secondary: string };
+/**
+ * useArtworkColor
+ *
+ * Extracts a dominant color from the current track's artwork so the
+ * background gradient can mimic Spotify's "color washed" now-playing screen.
+ * Skipped entirely for video tracks, which use VideoBackground instead.
+ */
+const DEFAULT_BACKGROUND_COLOR = '#3d3d3d';
 
-const FALLBACK: Colors = { primary: '#1DB954', secondary: '#121212' };
-
-export const usePlayerColors = (): Colors => {
-  const [colors, setColors] = useState<Colors>(FALLBACK);
-
-  const fetchColors = async () => {
-    try {
-      const activeItem = TrackPlayer.getActiveMediaItem();
-      if (!activeItem?.artworkUrl) {
-        setColors(FALLBACK);
-        return;
-      }
-
-      const url = `${MEDIA_URL}/${activeItem.artworkUrl}`;
-
-      const result = (await ImageColors.getColors(url, {
-        fallback: '#121212',
-        cache: true,
-        key: url,
-      })) as any;
-
-      let primary = FALLBACK.primary;
-      let secondary = FALLBACK.secondary;
-
-      if (Platform.OS === 'android') {
-  
-        primary = result.dominant || result.vibrant || result.average || FALLBACK.primary;
-        secondary = result.average || result.dominant || FALLBACK.secondary;
-      } else {
-   
-        primary = result.background || result.primary || FALLBACK.primary;
-        secondary = result.secondary || result.detail || FALLBACK.secondary;
-      }
-
-      setColors({ primary, secondary });
-    } catch (error) {
-      setColors(FALLBACK);
-    }
-  };
+export const usePlayerColors = (coverUrl?: string) => {
+  const [color, setColor] = useState(DEFAULT_BACKGROUND_COLOR);
 
   useEffect(() => {
-    void fetchColors();
+    let isMounted = true;
 
-    const sub = TrackPlayer.addEventListener(Event.MediaItemTransition, () => {
-      void fetchColors();
-    });
+    if (!coverUrl) {
+      setColor(DEFAULT_BACKGROUND_COLOR);
+      return;
+    }
 
-    return () => sub.remove();
-  }, []);
+    ImageColors.getColors(coverUrl, {
+      fallback: DEFAULT_BACKGROUND_COLOR,
+      cache: true,
+      key: coverUrl,
+    })
+      .then((result:any) => {
+        if (!isMounted) return;
 
-  return colors;
+        // Result shape differs per platform
+        if (result.platform === 'android') {
+          setColor(result.dominant ?? DEFAULT_BACKGROUND_COLOR);
+        } else if (result.platform === 'ios') {
+          setColor(result.background ?? DEFAULT_BACKGROUND_COLOR);
+        } else {
+          setColor(DEFAULT_BACKGROUND_COLOR);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setColor(DEFAULT_BACKGROUND_COLOR);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [coverUrl]);
+
+  return color;
 };

@@ -43,14 +43,14 @@ useEffect(() => {
 
   return (
     <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
         <StatusBar
           barStyle="light-content"
           {...({ backgroundColor: '#0f172a' } as StatusBarProps)}
         />
-        <GestureHandlerRootView>
+      <QueryClientProvider client={queryClient}>
+        <GestureHandlerRootView style={{ flex: 1 }}>
           <RootNavigator />
-          <Toast />
+          <Toast visibilityTime={6000} position="top" topOffset={60} />
         </GestureHandlerRootView>
       </QueryClientProvider>
     </SafeAreaProvider>

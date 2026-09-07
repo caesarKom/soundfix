@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Slider from '@react-native-community/slider';
 import Animated, {
@@ -13,6 +13,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import TrackPlayer from '@rntp/player';
 import { usePlayerStore, Track } from '../../store/usePlayerStore';
+import { MEDIA_URL } from '../../config/env';
 
 interface ControllsAndDetailsProps {
   track: Track;
@@ -191,7 +192,29 @@ export const ControllsAndDetails: React.FC<ControllsAndDetailsProps> = ({
         <TouchableOpacity hitSlop={12}>
           <Icon name="repeat" size={22} color="rgba(255,255,255,0.7)" />
         </TouchableOpacity>
-      </View>
+</View>
+        <View style={styles.divider} />
+        
+                  <View style={styles.artistSection}>
+                    <Text style={styles.sectionLabel}>About the artist</Text>
+        
+                    <View style={styles.artistCard}>
+                      <Image source={{ uri: `${MEDIA_URL}/${track.coverUrl}` }} style={styles.artistImage} />
+                      <View style={styles.artistInfoOverlay}>
+                        <Text style={styles.artistName}>{track.artist}</Text>
+                      </View>
+                    </View>
+        
+                    <Text style={styles.artistDescription}>
+                      {/* TODO: replace with real artist bio / monthly listeners from your API */}
+                      No bio available yet for this artist.
+                    </Text>
+        
+                    <TouchableOpacity style={styles.followButton}>
+                      <Text style={styles.followButtonText}>Follow</Text>
+                    </TouchableOpacity>
+                  </View>
+      
     </View>
   );
 };
@@ -259,6 +282,61 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    marginTop: 32,
+    marginBottom: 24,
+  },
+  artistSection: {
+    paddingBottom: 40,
+  },
+  sectionLabel: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+  artistCard: {
+    width: '100%',
+    height: 160,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  artistImage: {
+    width: '100%',
+    height: '100%',
+  },
+  artistInfoOverlay: {
+    position: 'absolute',
+    left: 12,
+    bottom: 12,
+  },
+  artistName: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  artistDescription: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 13,
+    lineHeight: 18,
+    marginTop: 12,
+  },
+  followButton: {
+    marginTop: 16,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.4)',
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+  },
+  followButtonText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
   },
 });
 

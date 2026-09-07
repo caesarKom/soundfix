@@ -1,45 +1,41 @@
-import React, { useRef } from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
-import Video, { VideoRef } from 'react-native-video';
+import { VideoView, useVideoPlayer } from 'react-native-video';
 import LinearGradient from 'react-native-linear-gradient';
 import { screenHeight, screenWidth } from '../../utils/constants';
 import { StyleProp } from 'react-native';
+import { useEffect } from 'react';
 
 interface VideoBackgroundProps {
   videoUri: string;
 }
 
-/**
- * VideoBackground
- *
- * Fullscreen, looping, muted video used as the now-playing background when
- * the current track's mimeType is "video/*" (Spotify Canvas style). A dark
- * gradient is layered on top so the title/controls stay readable.
- */
+
 export const VideoBackground: React.FC<VideoBackgroundProps> = ({ videoUri }) => {
-  const videoRef = useRef<VideoRef>(null);
+    const player = useVideoPlayer(videoUri, (playerInstance) => {
+    playerInstance.loop = true;                       
+    playerInstance.muted = true;                      
+    playerInstance.playInBackground = false;          
+    playerInstance.playWhenInactive = false;
+  });
+
+  useEffect(() => {
+    if (videoUri) {
+      player.replaceSourceAsync({ uri: videoUri })
+        .catch(err => console.error('Błąd zmiany źródła wideo:', err));
+    }
+  }, [videoUri, player]);
 
   if (!videoUri) return <View style={styles.videoContainer} />;
 
+
+
   return (
     <View style={styles.videoContainer}>
-      <Video
-        source={{ uri: videoUri, type: 'mp4', headers: {
-      'Range': 'bytes=0-', 
-    } }}
-    ref={videoRef}
-        ignoreSilentSwitch="ignore"
-        playWhenInactive={false}
-        playInBackground={false}
-        controls={false}
-        disableFocus
-        muted
+      <VideoView
+        player={player}
         style={styles.videoContainer}
-        repeat
-        hideShutterView
-        resizeMode="cover"
-        shutterColor="transparent"
-        onError={(error) => console.log('❌ Błąd odtwarzania wideo:', error)}
+        controls={false}
+        resizeMode='cover'
       />
       <LinearGradient
         colors={[
@@ -62,21 +58,22 @@ export const VideoBackground: React.FC<VideoBackgroundProps> = ({ videoUri }) =>
 
 const styles = StyleSheet.create({
   videoContainer: {
+    position: 'absolute',
     top: -80,
+    left: 0,
+    right: 0,
     bottom: 0,
     height: screenHeight,
     width: screenWidth,
-    aspectRatio: 9 / 16,
-    position: 'absolute',
+    aspectRatio: 9/16,
     zIndex: -2,
   },
   gradient: {
-    height: screenHeight,
-    width: screenWidth,
-    zIndex: -1,
     position: 'absolute',
     top: 0,
-    bottom: 0,
+    left: 0,
     right: 0,
+    bottom: 0,
+    zIndex: -1
   },
 });

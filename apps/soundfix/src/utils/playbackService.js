@@ -5,9 +5,7 @@ export const playbackSession = () => {
 
  TrackPlayer.addEventListener(Event.IsPlayingChanged, async ({ playing }) => {
     if (!playing) return;
-    console.log("Object playing : ", playing)
-   const currentT = usePlayerStore.getState().currentTrack;
-    console.info("🎵 add event lisner " , currentT)
+
    try {
       const store = usePlayerStore.getState();
       const currentIndex = TrackPlayer.getActiveMediaItemIndex();

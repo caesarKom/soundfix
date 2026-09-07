@@ -1,35 +1,39 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { Directions, GestureDetector, useFlingGesture } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { usePlayerStore } from '../../store/usePlayerStore';
+import { runOnJS } from 'react-native-reanimated';
 import { MEDIA_URL } from '../../config/env';
 import { noSongImg } from '../../utils/images';
-import { scheduleOnRN } from 'react-native-worklets';
 import { useProgress } from '@rntp/player';
 
-export const MiniPlayer = () => {
+type Props = {
+  onTap: () => void;
+};
+
+export const MiniPlayer = ({onTap}:Props) => {
   const currentTrack = usePlayerStore((s) => s.currentTrack);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
   const play = usePlayerStore((s) => s.play);
   const pause = usePlayerStore((s) => s.pause);
   const skipToNext = usePlayerStore((s) => s.skipToNext);
-  const setIsExpanded = usePlayerStore((s) => s.setIsExpanded);
   const { duration, position } = useProgress()
-
-  // Swiping up on the bar opens the full player, same as in Spotify.
-  const swipeUpGesture = useFlingGesture({
-    direction: Directions.UP,
-    onActivate: () => {
-      'worllet'
-      setIsExpanded(true);
-    },
-  });
-
-  if (!currentTrack) return null;
 
   const progressPercent = duration > 0 ? Math.min(position / duration, 1) * 100 : 0;
 
+  const pan = Gesture.Pan()
+    .onEnd((event) => {
+      if (event.translationY < -50) {
+        runOnJS(onTap)();
+      }
+    });
+
+  const tap = Gesture.Tap().onEnd(() => {
+    runOnJS(onTap)();
+  });
+
+  
   const togglePlayback = () => {
     if (isPlaying) {
       pause();
@@ -37,13 +41,14 @@ export const MiniPlayer = () => {
       play();
     }
   };
+  
+  const gesture = Gesture.Race(pan, tap);
+
+  if (!currentTrack) return null;
 
   return (
-    <GestureDetector gesture={swipeUpGesture}>
-      <TouchableOpacity
-        activeOpacity={0.9}
-        style={styles.container}
-        onPress={() => scheduleOnRN(() => setIsExpanded(true))}>
+    <View style={styles.container}>
+    <GestureDetector gesture={gesture}>
 
         <View style={styles.content}>
           <Image source={{ uri: `${MEDIA_URL}/${currentTrack.coverUrl}`||noSongImg }} style={styles.artwork} />
@@ -57,20 +62,21 @@ export const MiniPlayer = () => {
             </Text>
           </View>
 
-          <TouchableOpacity hitSlop={12} onPress={togglePlayback} style={styles.iconButton}>
+          <View hitSlop={12} style={styles.iconButton}>
             <Icon name={isPlaying ? 'pause' : 'play'} size={24} color="#fff" />
-          </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity hitSlop={12} onPress={skipToNext} style={styles.iconButton}>
+          <View hitSlop={12} style={styles.iconButton}>
             <Icon name="play-skip-forward" size={22} color="#fff" />
-          </TouchableOpacity>
+          </View>
         </View>
-      </TouchableOpacity>
+    </GestureDetector>
+
       {/* Thin progress line at the very top of the bar */}
         <View style={styles.progressTrack}>
           <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
         </View>
-    </GestureDetector>
+    </View>
   );
 };
 

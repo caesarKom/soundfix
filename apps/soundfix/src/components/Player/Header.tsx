@@ -1,35 +1,46 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
-import Icon from '../Icon'
-import { Track } from '../../store/usePlayerStore'
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import Icon from '../Icon';
+import { Track } from '../../store/usePlayerStore';
 
-const Header = ({ track }: { track: Track}) => {
+const Header = ({ track }: { track: Track }) => {
   return (
-             <View style={styles.header}>
-               <TouchableOpacity hitSlop={12} onPress={() => {}}>
-                 <Icon iconFamily='Ionicons' name="chevron-down" size={28} color="#fff" />
-               </TouchableOpacity>
-   
-               <View style={styles.headerTextWrapper}>
-                 <Text style={styles.headerSubtitle}>PLAYING FROM PLAYLIST</Text>
-                 <Text style={styles.headerTitle} numberOfLines={1}>
-                   {track.album ?? 'Unknown album'}
-                 </Text>
-               </View>
-   
-               <TouchableOpacity hitSlop={12}>
-                 <Icon iconFamily='Ionicons' name="ellipsis-horizontal" size={24} color="#fff" />
-               </TouchableOpacity>
-             </View>
-    
-  )
-}
+    <View style={styles.header}>
+      <TouchableOpacity hitSlop={12} onPress={() => {}}>
+        <Icon
+          iconFamily="Ionicons"
+          name="chevron-down"
+          size={28}
+          color="#fff"
+        />
+      </TouchableOpacity>
+
+      <View style={styles.headerTextWrapper}>
+        <Text style={styles.headerSubtitle}>PLAYING FROM PLAYLIST</Text>
+        <Text style={styles.headerTitle} numberOfLines={1}>
+          {track.album ?? 'Unknown album'}
+        </Text>
+      </View>
+
+      <TouchableOpacity hitSlop={12}>
+        <Icon
+          iconFamily="Ionicons"
+          name="ellipsis-vertical"
+          size={24}
+          color="#fff"
+        />
+      </TouchableOpacity>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
-     header: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingBottom: 12,
+    top: 10,
+    paddingBottom: 8,
+    paddingHorizontal: 12,
   },
   headerTextWrapper: {
     flex: 1,
@@ -47,6 +58,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginTop: 2,
   },
-})
+});
 
-export default Header
+export default Header;

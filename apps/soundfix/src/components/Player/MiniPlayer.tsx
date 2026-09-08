@@ -1,24 +1,31 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
+import Icon from '../Icon';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { usePlayerStore } from '../../store/usePlayerStore';
+import { Track, usePlayerStore } from '../../store/usePlayerStore';
 import { runOnJS } from 'react-native-reanimated';
 import { MEDIA_URL } from '../../config/env';
 import { noSongImg } from '../../utils/images';
 import { useProgress } from '@rntp/player';
+import { usePlayerColors } from './usePlayerColors';
+import LinearGradient from 'react-native-linear-gradient';
+import { MovingText } from '../MovingText';
+import { fontR, FONTS } from '../../utils/constants';
+import CustomText from '../CustomText';
+import { PlayButton } from './PlayButton';
 
 type Props = {
   onTap: () => void;
+  isPlaying: boolean;
+  track: Track | null;
 };
 
-export const MiniPlayer = ({onTap}:Props) => {
-  const currentTrack = usePlayerStore((s) => s.currentTrack);
-  const isPlaying = usePlayerStore((s) => s.isPlaying);
+export const MiniPlayer = ({onTap, isPlaying, track}:Props) => {
   const play = usePlayerStore((s) => s.play);
   const pause = usePlayerStore((s) => s.pause);
   const skipToNext = usePlayerStore((s) => s.skipToNext);
   const { duration, position } = useProgress()
+
 
   const progressPercent = duration > 0 ? Math.min(position / duration, 1) * 100 : 0;
 
@@ -44,76 +51,91 @@ export const MiniPlayer = ({onTap}:Props) => {
   
   const gesture = Gesture.Race(pan, tap);
 
-  if (!currentTrack) return null;
+  const backgroundColor = usePlayerColors(track?.coverUrl);
+
+  if (!track) return null;
 
   return (
-    <View style={styles.container}>
-    <GestureDetector gesture={gesture}>
+    <View style={{ flex: 1, flexDirection: 'row' }}>
+  <GestureDetector gesture={gesture}>
+      <View style={{ flex: 1 }}>
+        <LinearGradient colors={[backgroundColor, 'rgba(0,0,0,0.9)']} style={styles.container}>
+          <View style={styles.flexRowBetween}>
+            <View style={styles.flexRow}>
+              <Image
+                source={{ uri: `${MEDIA_URL}/${track.coverUrl}` || noSongImg }}
+                style={styles.img}
+              />
+              <View style={{ width: '68%' }}>
+                <MovingText
+                style={styles.title}
+                  text={track.title}
+                />
+                <CustomText
+                  fontFamily={FONTS.Medium}
+                  numberOfLines={1}
+                  fontSize={fontR(6)}
+                  style={{ opacity: 0.8, paddingLeft: 4 }}>
+                  {track.artist}
+                </CustomText>
+              </View>
+            </View>
 
-        <View style={styles.content}>
-          <Image source={{ uri: `${MEDIA_URL}/${currentTrack.coverUrl}`||noSongImg }} style={styles.artwork} />
-
-          <View style={styles.textContainer}>
-            <Text style={styles.title} numberOfLines={1}>
-              {currentTrack.title}
-            </Text>
-            <Text style={styles.artist} numberOfLines={1}>
-              {currentTrack.artist}
-            </Text>
+            <View style={styles.flexRow}>
+              <Icon
+                name="broadcast-on-home"
+                iconFamily="MaterialIcons"
+                color="#ccc"
+                size={fontR(20)}
+              />
+            </View>
+             
           </View>
 
-          <View hitSlop={12} style={styles.iconButton}>
-            <Icon name={isPlaying ? 'pause' : 'play'} size={24} color="#fff" />
+          <View style={styles.progressContainer}>
+            <View style={styles.progressBackground}>
+              <View
+                style={[styles.progressBar, { width: progressPercent }]}
+              />
+            </View>
           </View>
-
-          <View hitSlop={12} style={styles.iconButton}>
-            <Icon name="play-skip-forward" size={22} color="#fff" />
-          </View>
-        </View>
+        </LinearGradient>
+      </View>
     </GestureDetector>
-
-      {/* Thin progress line at the very top of the bar */}
-        <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
-        </View>
+  <View style={styles.playButton}>
+         <PlayButton />
+ </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 2,
-    height: 58,
-    backgroundColor: '#282828',
-    borderRadius: 4,
-    paddingHorizontal: 5,
+    paddingTop: 4,
+    height: 60,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 6,
     overflow: 'hidden',
-  },
-  progressTrack: {
-    height: 2,
     width: '100%',
-    backgroundColor: 'rgba(255,255,255,0.15)',
   },
-  progressFill: {
-    height: 2,
-    backgroundColor: '#1DB954',
+  img: {
+    borderRadius: 5,
+    width: 45,
+    height: 45,
+    resizeMode: 'cover',
   },
-  content: {
-    flex: 1,
+ flexRowBetween: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    width: '100%',
+  },
+  flexRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-  },
-  artwork: {
-    width: 40,
-    height: 40,
-    borderRadius: 4,
-    backgroundColor: '#3e3e3e',
-  },
-  textContainer: {
-    flex: 1,
-    marginLeft: 10,
-    marginRight: 8,
+    gap: 6,
   },
   title: {
     color: '#fff',
@@ -125,184 +147,26 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 2,
   },
-  iconButton: {
-    padding: 6,
-    marginLeft: 4,
+  progressContainer: {
+    height: 2,
+    width: '100%',
+    marginTop: 5,
   },
+  progressBackground: {
+    height: 3,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  progressBar: {
+    height: 3,
+    backgroundColor: 'green',
+  },
+  playButton: {
+    position: 'absolute',
+    right: 10,
+    top: 18,
+    transform: [{ translateY: -15 }],
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  }
 });
-
-
-
-
-// import React, { useCallback, useEffect, useState } from 'react';
-// import { View, Text, Image, StyleSheet } from 'react-native';
-// import { usePlayerStore } from '../../store/usePlayerStore';
-// import { MEDIA_URL } from '../../config/env';
-// import { useProgress } from '@rntp/player';
-// import LinearGradient from 'react-native-linear-gradient';
-// import {MovingText} from '../MovingText';
-// import { PlayButton } from './PlayButton';
-// import { GestureDetector, usePanGesture, useSimultaneousGestures, useTapGesture } from 'react-native-gesture-handler';
-// import ImageColors from 'react-native-image-colors';
-// import { darkColor } from '../../utils/constants';
-// import { Platform } from 'react-native';
-// import { noSongImg, notImage } from '../../utils/images';
-// import { scheduleOnRN } from 'react-native-worklets';
-
-// type Props = {
-//   onTap: () => void;
-// };
-
-// export const MiniPlayer = ({ onTap }: Props) => {
-//   const [colors, setColors] = useState(['#666', '#666']);
-//   const { currentTrack } = usePlayerStore();
-//   const { position, duration } = useProgress();
-
-//   const handleTogglePlayer = useCallback(() => {
-//     onTap();
-//   }, [onTap]);
-
-//   const pan = usePanGesture({
-//     onDeactivate: (event) => {
-//       if (event.translationY < -50) {
-//         scheduleOnRN(handleTogglePlayer);
-//       }
-//     },
-//   });
-
-//   const tap = useTapGesture({
-//     onDeactivate: () => {
-//       scheduleOnRN(handleTogglePlayer);
-//     },
-//   });
-
-//   const gesture = useSimultaneousGestures(pan, tap);
-
-//   useEffect(() => {
-//     if (!currentTrack || !currentTrack.coverUrl) {
-//       setColors(['#666', '#666']);
-//       return;
-//     }
-
-//     const url = `${MEDIA_URL}/${currentTrack.coverUrl}` || `${notImage}`
-//     ImageColors
-//       .getColors(url, {
-//         fallback: '#666',
-//         cache: true,
-//         key: url,
-//       })
-//       .then((c: any) => {
-//         const color = Platform.OS === 'ios' ? c.secondary : c.vibrant;
-//         const darkenedSecondary = darkColor(color);
-//         setColors([darkenedSecondary, darkenedSecondary]);
-//       })
-//       .catch((err) => {
-//         console.warn('Nie udało się pobrać kolorów okładki:', err.message);
-//         setColors(['#666', '#666']);
-//       });
-//   }, [currentTrack]);
-
-//    if (!currentTrack) {
-//     return null;
-//   }
-
-//    const calculateProgressWidth: any = () => {
-//     if (duration > 0) {
-//       const procentage = (position / duration) * 100;
-//       return `${procentage}%`;
-//     }
-//     return '0%';
-//   };
-
-//   return (
-
-//     <View style={{ flex: 1, flexDirection: 'row' }}>
-//        <GestureDetector gesture={gesture}>
-//       <View style={{ flexGrow: 1 }}>
-//         <LinearGradient colors={colors} style={s.container} >
-//           <View style={s.flexRowBetween}>
-              
-//             <View style={s.flexRow}>
-//           <Image
-//             source={{ uri: `${MEDIA_URL}/${currentTrack.coverUrl}` || noSongImg }}
-//             style={s.img}
-//            />
-//            <View style={{ width: '68%' }}>
-//             <MovingText text={currentTrack.title} style={{ fontWeight: 'bold', fontSize: 16}} />
-
-//             <Text numberOfLines={1} style={{paddingHorizontal: 6, opacity: 5}}>{currentTrack.artist}</Text>
-//            </View>
-//             </View>
-//           </View>
-
-//           <View style={s.progressContainer}>
-//             <View style={s.progressBackground}>
-//               <View
-//                 style={[s.progressBar, { width: calculateProgressWidth() }]}
-//               />
-//             </View>
-//           </View>
-//         </LinearGradient>
-//       </View>
-//     </GestureDetector>
-//       <View style={s.playButton}>
-//          <PlayButton />
-//  </View>
-//     </View>
- 
-     
-       
-//   );
-// };
-
-// const s = StyleSheet.create({
-//   container: {
-//     paddingTop: 4,
-//     height: 60,
-//     backgroundColor: 'rgba(0,0,0,0.4)',
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     paddingHorizontal: 5,
-//     overflow: 'hidden',
-//     width: '100%',
-//   },
-//   img: {
-//     borderRadius: 5,
-//     width: 45,
-//     height: 45,
-//     resizeMode: 'cover',
-//   },
-//   flexRowBetween: {
-//     flexDirection: 'row',
-//     justifyContent: 'flex-start',
-//     alignItems: 'center',
-//     width: '100%',
-//   },
-//   flexRow: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     gap: 10,
-//   },
-//   progressContainer: {
-//     height: 2,
-//     width: '100%',
-//     marginTop: 5,
-//   },
-//   progressBackground: {
-//     height: 3,
-//     backgroundColor: 'rgba(255,255,255,0.3)',
-//   },
-//   progressBar: {
-//     height: 3,
-//     backgroundColor: '#fff',
-//   },
-//   playButton: {
-//     position: 'absolute',
-//     right: 10,
-//     top: 18,
-//     transform: [{ translateY: -15 }],
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     zIndex: 1000,
-//   }
-// });

@@ -1,33 +1,36 @@
-import { View, StyleSheet, ViewStyle } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { VideoView, useVideoPlayer } from 'react-native-video';
 import LinearGradient from 'react-native-linear-gradient';
 import { screenHeight, screenWidth } from '../../utils/constants';
-import { StyleProp } from 'react-native';
 import { useEffect } from 'react';
 
 interface VideoBackgroundProps {
   videoUri: string;
 }
 
-
-export const VideoBackground: React.FC<VideoBackgroundProps> = ({ videoUri }) => {
-    const player = useVideoPlayer(videoUri, (playerInstance) => {
-    playerInstance.loop = true;                       
-    playerInstance.muted = true;                      
-    playerInstance.playInBackground = false;          
+export const VideoBackground: React.FC<VideoBackgroundProps> = ({
+  videoUri,
+}) => {
+  const player = useVideoPlayer(videoUri, playerInstance => {
+    playerInstance.loop = true;
+    playerInstance.muted = true;
+    playerInstance.playInBackground = false;
     playerInstance.playWhenInactive = false;
+    playerInstance.play();
   });
 
   useEffect(() => {
     if (videoUri) {
-      player.replaceSourceAsync({ uri: videoUri })
+      player
+        .replaceSourceAsync({ uri: videoUri })
+        .then(() => {
+          player.play();
+        })
         .catch(err => console.error('Błąd zmiany źródła wideo:', err));
     }
   }, [videoUri, player]);
 
   if (!videoUri) return <View style={styles.videoContainer} />;
-
-
 
   return (
     <View style={styles.videoContainer}>
@@ -35,7 +38,7 @@ export const VideoBackground: React.FC<VideoBackgroundProps> = ({ videoUri }) =>
         player={player}
         style={styles.videoContainer}
         controls={false}
-        resizeMode='cover'
+        resizeMode="cover"
       />
       <LinearGradient
         colors={[
@@ -59,13 +62,13 @@ export const VideoBackground: React.FC<VideoBackgroundProps> = ({ videoUri }) =>
 const styles = StyleSheet.create({
   videoContainer: {
     position: 'absolute',
-    top: -80,
+    top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    height: screenHeight,
+    height: screenHeight + 80,
     width: screenWidth,
-    aspectRatio: 9/16,
+    aspectRatio: 9 / 16,
     zIndex: -2,
   },
   gradient: {
@@ -74,6 +77,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: -1
+    zIndex: -1,
   },
 });

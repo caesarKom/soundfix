@@ -12,6 +12,10 @@
     "build:backend": "pnpm --filter backend build",
     "build:frontend": "pnpm --filter frontend build",
     "build:admin": "pnpm --filter admin build",
+
+    "db:generate": "pnpm --filter backend prisma:generate",
+    "db:migrate": "pnpm --filter backend prisma:migrate",
+    "db:studio": "pnpm --filter backend prisma:studio",
     
     "test": "pnpm -r test",
     "test:ci": "pnpm -r test:ci",

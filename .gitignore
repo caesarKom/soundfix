@@ -28,19 +28,6 @@ out/
 # --- Vite (admin) ---
 /apps/admin/dist
 
-# --- React Native (soundfix) ---
-.expo/
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
-/apps/soundfix/android/.gradle
-/apps/soundfix/android/app/build
-/apps/soundfix/android/app/build.gradle
-/apps/soundfix/ios/Pods
-/apps/soundfix/ios/build
-
 # --- Prisma ---
 /apps/backend/prisma/dev.db
 /apps/backend/prisma/dev.db-journal

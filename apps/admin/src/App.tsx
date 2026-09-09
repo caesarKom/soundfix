@@ -9,6 +9,8 @@ import { DashboardPage } from './features/dashboard/components/dashboard-page.ts
 import { UsersPage } from './features/users/components/users-page.tsx';
 import { MusicPage } from './features/music/components/music-page.tsx';
 import { PlaylistsPage } from './features/playlists/components/playlists-page.tsx';
+import { Toaster } from 'sonner';
+import { SessionsView } from './features/sessions/session-page.tsx';
 
 export function App() {
   const { isAuthenticated, user } = useAuthStore();
@@ -26,6 +28,7 @@ export function App() {
         {currentView === 'users' && <UsersPage />}
         {currentView === 'music' && <MusicPage />}
         {currentView === 'playlists' && <PlaylistsPage />}
+        {currentView === 'sessions' && <SessionsView />}
       </AdminLayout>
     );
   };
@@ -33,6 +36,7 @@ export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       {renderMainContent()}
+      <Toaster />
     </QueryClientProvider>
   );
 }

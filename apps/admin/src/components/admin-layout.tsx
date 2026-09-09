@@ -32,6 +32,7 @@ export function AdminLayout({ currentView, onViewChange, children }: AdminLayout
     { id: 'users', label: 'Users', icon: '👥' },
     { id: 'music', label: 'Music Manager', icon: '🎵' },
     { id: 'playlists', label: 'Playlists', icon: '🗂️' },
+    { id: 'sessions', label: 'Sessions', icon: '📅' },
   ];
 
   return (

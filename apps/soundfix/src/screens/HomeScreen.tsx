@@ -1,51 +1,18 @@
-import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, RefreshControl, Image, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Avatar } from '../components/Avatar';
-import { useAuthStore } from '../store/useAuthStore';
-import { useNavigation } from '@react-navigation/native';
-import { DrawerNavigationProp } from '@react-navigation/drawer';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MEDIA_URL } from '../config/env';
-import { useQuery } from '@tanstack/react-query';
 import { Track, usePlayerStore } from '../store/usePlayerStore';
-import { api } from '../services/api';
 import { noSongImg } from '../utils/images';
+import { useMusicQuery, usePlaylistsQuery } from '../hooks/useMusicQueries';
+import HeaderWithAvatarDrawer from '../components/HeaderWithAvatarDrawer';
 
 
 export const HomeScreen = () => {
-  const insets = useSafeAreaInsets();
-  const { user } = useAuthStore.getState();
-  const navigation = useNavigation<DrawerNavigationProp<any>>();
-  
- const {currentTrack,setAllTracks,playTrackFromLoadedQueue} = usePlayerStore()
+ const {currentTrack, playTrackFromLoadedQueue} = usePlayerStore()
 
-
-  const { data: musicData, isLoading, isError, refetch, isRefetching } = useQuery({
-    queryKey: ['music'],
-    queryFn: async () => {
-      const res = await api.get('/music');
-      return Array.isArray(res.data) ? res.data : (res.data?.data || []);
-    },
-  });
-
-   useEffect(() => {
-    if (Array.isArray(musicData) && musicData.length > 0) {
-      setAllTracks(musicData);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [musicData?.length]);
-
-  const { data: PlayListData } = useQuery({
-    queryKey: ['playlists'],
-    queryFn: async () => {
-      const res = await api.get('/playlists');
-      return Array.isArray(res.data) ? res.data : (res.data?.data || []);
-    },
-  });
-
-  const avatarUrl = user?.profile?.avatar ? `${MEDIA_URL}/${user.profile.avatar}` : undefined;
-  const userName = user?.name || user?.email || 'User';
+  const { data: musicData, isLoading, isError, refetch, isRefetching } = useMusicQuery();
+  const { data: playlistsData } = usePlaylistsQuery();
 
   if (isLoading) {
     return (
@@ -69,25 +36,14 @@ export const HomeScreen = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-neutral-950">
+      <HeaderWithAvatarDrawer />
       <ScrollView
         className="flex-1 px-4"
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingTop:12, paddingBottom: 100 }}
         refreshControl={
-          <RefreshControl refreshing={isRefetching} tintColor="#1DB954" onRefresh={() => { void refetch(); }} />
+          <RefreshControl refreshing={isRefetching} tintColor="#1DB954" onRefresh={() => { refetch(); }} />
         }
       >
-        <View className="flex-1 bg-slate-950" style={{ paddingTop: insets.top }}>
-          <View className="flex-row items-center justify-between px-4 py-3">
-            <Avatar
-              imageUrl={avatarUrl}
-              name={userName}
-              size={36}
-              onPress={() => navigation.openDrawer()}
-            />
-            <Text className="text-white font-bold text-xl">SoundFix</Text>
-            <View className='w-16' />
-          </View>
-        </View>
 
         {/* 2-Column Quick Grid */}
         <View className="flex-row flex-wrap justify-between mb-6">
@@ -98,9 +54,7 @@ export const HomeScreen = () => {
                 key={track.id}
                 activeOpacity={0.8}
         
-                onPress={() => {
-                  void playTrackFromLoadedQueue(track.id);
-                }}
+                onPress={() => playTrackFromLoadedQueue(track.id)}
                 className="w-[48.5%] h-14 bg-neutral-900/80 rounded-md flex-row items-center mb-2 overflow-hidden border border-neutral-800/50"
               >
                 <Image
@@ -121,11 +75,11 @@ export const HomeScreen = () => {
         </View>
 
         {/* Featured Playlists */}
-        {Array.isArray(PlayListData) && PlayListData.length > 0 && (
+        {Array.isArray(playlistsData) && playlistsData.length > 0 && (
           <View className="mb-6">
             <Text className="text-white text-xl font-bold mb-3">Featured Playlists</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {PlayListData.map((playlist: any) => (
+              {playlistsData.map((playlist: any) => (
                 <TouchableOpacity key={playlist.id} className="mr-4 w-36" activeOpacity={0.7}>
                   <Image
                     source={{
@@ -152,10 +106,8 @@ export const HomeScreen = () => {
             {Array.isArray(musicData) && musicData.map((track: Track) => (
               <TouchableOpacity
                 key={track.id}
-                // ✅ POPRAWKA 3: Tutaj również przekazujemy ID utworu
-                onPress={() => {
-                  void playTrackFromLoadedQueue(track.id);
-                }}
+           
+                onPress={() => playTrackFromLoadedQueue(track.id)}
                 className="mr-4 w-36"
                 activeOpacity={0.7}
               >

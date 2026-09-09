@@ -26,6 +26,10 @@ model Session {
   expiresAt  DateTime
   createdAt  DateTime @default(now())
   updatedAt  DateTime
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([isRevoked])
 }
 
 enum MemberRole {

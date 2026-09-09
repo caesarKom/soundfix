@@ -1,9 +1,17 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { User } from '../../generated/prisma/client';
 
 export const CurrentUser = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext): string => {
+  (data: keyof User | undefined, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
-    // We guarantee to TypeScript that we return a string using an assertion or default value
-    return (request.user?.id as string) || '';
-  }
+    const user:User = request.user;
+
+    // If a specific key is passed (e.g. 'role'), return this property
+    if (data && user) {
+      return user[data];
+    }
+
+    // Otherwise, return the entire user object.
+    return user;
+  },
 );

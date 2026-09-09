@@ -107,7 +107,11 @@ export class PlaylistService {
   ) {
     const playlist = await this.findOne(id, userId, userRole);
 
-    if (playlist.userId !== userId && userRole !== 'ADMIN') {
+    console.log("Play list user: ", playlist.userId)
+    console.log("userId: ", userId)
+    console.log("USERROLE : ", userRole)
+
+    if (userRole !== 'ADMIN' && playlist.userId !== userId) {
       throw new ForbiddenException('You do not have permission to edit this playlist');
     }
 

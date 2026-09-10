@@ -43,6 +43,7 @@ export const musicApi = {
   if (dto.isPublic !== undefined) formData.append('isPublic', String(dto.isPublic));
   if (dto.duration) formData.append('duration', String(dto.duration));
   if (dto.cover) formData.append('cover', dto.cover); // New cover binary file
+  if (dto.audio) formData.append('audio', dto.audio)
 
   const { data } = await apiClient.patch<Track>(`/music/${id}`, formData, {
     headers: {

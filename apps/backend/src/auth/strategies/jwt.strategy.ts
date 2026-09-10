@@ -36,6 +36,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       // regular access token cannot stream via query param
       throw new UnauthorizedException('Use a media token for streaming');
     }
+    console.log("Peyload sub : ", payload)
 
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },

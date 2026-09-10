@@ -16,7 +16,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { PlaylistService } from './playlist.service';
 import { CreatePlaylistDto, ManagePlaylistSongsDto, UpdatePlaylistDto } from './dto/playlist.dto';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { CurrentUser, ObjectUser } from '../auth/decorators/current-user.decorator';
 import { Playlist } from '../generated/prisma/client';
 import type { UploadedFileDto } from '../music/dto/music.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -69,7 +69,7 @@ export class PlaylistController {
   async update(
     @Param('id') id: string,
     @CurrentUser() userId: string,
-    @CurrentUser('role') userRole: string,
+    @ObjectUser('role') userRole: string,
     @Body() dto: UpdatePlaylistDto,
     @UploadedFile() newCoverFile?: UploadedFileDto,
   ) {

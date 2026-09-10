@@ -96,7 +96,7 @@ export class MusicService {
   const stat = statSync(filePath);
   const fileSize = stat.size;
 
-  void this.prisma.music.update({
+ await this.prisma.music.update({
     where: { id },
     data: { playCount: { increment: 1 } },
   });
@@ -112,7 +112,7 @@ export class MusicService {
       'Content-Range': `bytes ${start}-${end}/${fileSize}`,
       'Accept-Ranges': 'bytes',
       'Content-Length': chunkSize,
-      'Content-Type': song.mimeType, // realny mimeType, nie sztywno audio/mpeg
+      'Content-Type': song.mimeType, // real mimeType
     });
 
    const stream = createReadStream(filePath, { start, end });

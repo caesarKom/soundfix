@@ -5,7 +5,7 @@ import { authService } from "@/services/auth.service";
 
 export function useAudioPlayer() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const { currentTrack, isPlaying, volume, setPlaying, nextTrack } = usePlayerStore();
+  const { currentTrack, isPlaying, volume, setPlaying, next } = usePlayerStore();
 
   // Audio Instance Initialization
   useEffect(() => {
@@ -14,7 +14,7 @@ export function useAudioPlayer() {
     const audio = audioRef.current;
 
     const handleEnded = () => {
-      nextTrack();
+      next();
     };
 
     audio.addEventListener("ended", handleEnded);
@@ -23,7 +23,7 @@ export function useAudioPlayer() {
       audio.removeEventListener("ended", handleEnded);
       audio.pause();
     };
-  }, [nextTrack]);
+  }, [next]);
 
   // Reaction to song change and connecting a secure stream with a token
   useEffect(() => {
@@ -37,7 +37,7 @@ export function useAudioPlayer() {
         if (!isMounted) return;
         
         // build a secure stream URL with a valid token from the backend
-        audio.src = `${ENV.API_URL}/music/stream/${currentTrack.id}?token=${token}`;
+        audio.src = `${ENV.API_URL}/music/stream/${currentTrack()?.id}?token=${token}`;
         audio.load();
 
         if (isPlaying) {

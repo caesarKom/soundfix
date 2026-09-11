@@ -9,7 +9,7 @@ import type { SubmitEvent } from "react";
 export default function VerifyOtpPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { setAuth } = useAuthStore();
+  const { setUser, setToken } = useAuthStore();
   
   const emailParam = searchParams.get("email") || "";
   const [code, setCode] = useState("");
@@ -29,7 +29,8 @@ export default function VerifyOtpPage() {
 
     try {
       const data = await authService.verifyOtp({ email: emailParam, code });
-      setAuth(data.accessToken, data.user);
+      setToken(data.accessToken)
+      setUser(data.user)
       router.push("/home");
     } catch (err: any) {
       setError(err.response?.data?.message || "Invalid or expired verification code");

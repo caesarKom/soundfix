@@ -1,52 +1,58 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useAuthStore } from "@/store/auth.store";
-import { authService } from "@/services/auth.service";
-import type { SubmitEvent } from "react";
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useAuthStore } from "@/store/auth.store"
+import { authService } from "@/services/auth.service"
+import type { SubmitEvent } from "react"
+import { Suspense } from "react"
 
-export default function VerifyOtpPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const { setUser, setToken } = useAuthStore();
-  
-  const emailParam = searchParams.get("email") || "";
-  const [code, setCode] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+function VerifyOtpContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const { setUser, setToken } = useAuthStore()
+
+  const emailParam = searchParams.get("email") || ""
+  const [code, setCode] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (!emailParam) {
-      router.push("/register");
+      router.push("/register")
     }
-  }, [emailParam, router]);
+  }, [emailParam, router])
 
   const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
 
     try {
-      const data = await authService.verifyOtp({ email: emailParam, code });
+      const data = await authService.verifyOtp({ email: emailParam, code })
       setToken(data.accessToken)
       setUser(data.user)
-      router.push("/home");
+      router.push("/home")
     } catch (err: any) {
-      setError(err.response?.data?.message || "Invalid or expired verification code");
+      setError(
+        err.response?.data?.message || "Invalid or expired verification code",
+      )
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-spotify-black px-4">
       <div className="w-full max-w-md bg-spotify-base p-8 rounded-lg border border-spotify-press">
-        <h1 className="text-2xl font-bold text-center mb-2 text-spotify-white">Verify your email</h1>
+        <h1 className="text-2xl font-bold text-center mb-2 text-spotify-white">
+          Verify your email
+        </h1>
         <p className="text-xs text-spotify-muted text-center mb-8">
-          We sent a 6-digit verification code to <span className="text-spotify-white font-medium">{emailParam}</span>
+          We sent a 6-digit verification code to{" "}
+          <span className="text-spotify-white font-medium">{emailParam}</span>
         </p>
-        
+
         {error && (
           <div className="mb-4 p-3 bg-red-600/20 border border-red-600 text-red-200 text-sm rounded">
             {error}
@@ -79,5 +85,13 @@ export default function VerifyOtpPage() {
         </form>
       </div>
     </div>
-  );
+  )
+}
+
+export default function VerifyOtpPage() {
+  return (
+    <Suspense fallback={<div>Loading Form...</div>}>
+      <VerifyOtpContent />
+    </Suspense>
+  )
 }

@@ -33,7 +33,6 @@ interface SessionsFiltersProps {
 export function SessionsFilters({
   total,
   page,
-  limit,
   totalPages,
   onRefresh,
   isRefreshing,

@@ -37,7 +37,6 @@ interface SessionsTableProps {
 export function SessionsTable({
   sessions,
   isLoading,
-  onRevoke,
   onRevokeAll,
 }: SessionsTableProps) {
   const { setSelectedSessionId, setRevokeDialogOpen } = useSessionStore();

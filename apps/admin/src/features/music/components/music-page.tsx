@@ -12,6 +12,7 @@ export function MusicPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10 // Defensive pagination value
+  const IMAGE_URL = import.meta.env.VITE_BACKEND_URL;
 
   // Modals visibility triggers
   const [isUploadOpen, setIsUploadOpen] = useState(false)
@@ -115,7 +116,7 @@ export function MusicPage() {
                       const coverUrl = track.coverUrl
                         ? track.coverUrl.startsWith("http")
                           ? track.coverUrl
-                          : `http://localhost:5001/${track.coverUrl}`
+                          : `${IMAGE_URL}/${track.coverUrl}`
                         : null
                       return (
                         <tr

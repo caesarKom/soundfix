@@ -16,6 +16,7 @@ export function PlaylistEditForm({ playlist, onSuccess }: PlaylistEditFormProps)
   const [newCoverFile, setNewCoverFile] = useState<File | null>(null);
   const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const IMAGE_URL = import.meta.env.VITE_BACKEND_URL;
 
   useEffect(() => {
     return () => {
@@ -54,7 +55,7 @@ export function PlaylistEditForm({ playlist, onSuccess }: PlaylistEditFormProps)
   };
 
   const currentCoverUrl = playlist.coverUrl
-    ? (playlist.coverUrl.startsWith('http') ? playlist.coverUrl : `http://localhost:5001/${playlist.coverUrl}`)
+    ? (playlist.coverUrl.startsWith('http') ? playlist.coverUrl : `${IMAGE_URL}/${playlist.coverUrl}`)
     : null;
 
   return (

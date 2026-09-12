@@ -29,6 +29,7 @@ export function PlaylistsPage() {
     queryKey: ["admin-playlists"],
     queryFn: playlistsApi.getAll,
   })
+  const IMAGE_URL = import.meta.env.VITE_BACKEND_URL;
 
   const { data: activePlaylist, isLoading: isLoadingDetails } = useQuery({
     queryKey: ["admin-playlist-details", selectedPlaylistId],
@@ -111,7 +112,7 @@ export function PlaylistsPage() {
                         const coverUrl = playlist.coverUrl
                           ? playlist.coverUrl.startsWith("http")
                             ? playlist.coverUrl
-                            : `http://localhost:5001/${playlist.coverUrl}`
+                            : `${IMAGE_URL}/${playlist.coverUrl}`
                           : null
                         return (
                           <tr

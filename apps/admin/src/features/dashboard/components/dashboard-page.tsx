@@ -9,7 +9,7 @@ export function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-100">
         <p className="text-emerald-400 font-medium animate-pulse">Loading system statistics...</p>
       </div>
     );

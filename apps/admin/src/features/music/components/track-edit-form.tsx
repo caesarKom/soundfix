@@ -15,6 +15,7 @@ export function TrackEditForm({ track, onSuccess }: TrackEditFormProps) {
   const [album, setAlbum] = useState(track.album || "")
   const [isPublic, setIsPublic] = useState(track.isPublic)
 
+  const IMAGE_URL = import.meta.env.VITE_BACKEND_URL;
   // Track replacement binaries
   const [newAudioFile, setNewAudioFile] = useState<File | null>(null)
   const [newCoverFile, setNewCoverFile] = useState<File | null>(null)
@@ -76,7 +77,7 @@ export function TrackEditForm({ track, onSuccess }: TrackEditFormProps) {
   const currentCoverUrl = track.coverUrl
     ? track.coverUrl.startsWith("http")
       ? track.coverUrl
-      : `http://localhost:5001/${track.coverUrl}`
+      : `${IMAGE_URL}/${track.coverUrl}`
     : null
 
   return (

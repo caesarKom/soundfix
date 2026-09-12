@@ -16,7 +16,7 @@ import { AdminModule } from './admin/admin.module';
 // 1. Determine base path by traversing from runtime working directory
 const getUploadsPath = (): string => {
   const rootWorkspacePath = join(process.cwd(), 'uploads');
-  const backendLocalPath = join(process.cwd(), '..', '..', 'uploads');
+  const backendLocalPath = join(process.cwd(), '..', '..','..', 'uploads');
 
   // Verify which folder physically exists on the disk
   if (existsSync(rootWorkspacePath)) {

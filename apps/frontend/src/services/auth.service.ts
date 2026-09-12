@@ -14,12 +14,12 @@ export const authService = {
   },
 
   async register(data: RegisterDto): Promise<{ message: string }> {
-    const response = await api.post<{ message: string }>("/auth/register", data)
+    const response = await api.post<{ message: string }>("/users/register", data)
     return response.data
   },
 
   async verifyOtp(data: VerifyOtpDto): Promise<AuthResponse> {
-    const response = await api.post<AuthResponse>("/auth/verify-otp", data)
+    const response = await api.post<AuthResponse>("/users/verify-otp", data)
     return response.data
   },
 

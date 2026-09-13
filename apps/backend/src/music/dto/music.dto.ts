@@ -26,6 +26,7 @@ export class CreateMusicDto {
 
   @IsOptional()
   @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
   isPublic?: boolean;
 
   @IsNumber()
@@ -77,6 +78,7 @@ export class UpdateMusicDto {
 
   @IsOptional()
   @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
   isPublic?: boolean;
 }
 

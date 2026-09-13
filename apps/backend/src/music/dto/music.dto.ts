@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class CreateMusicDto {
@@ -18,6 +24,10 @@ export class CreateMusicDto {
   @IsOptional()
   mimeType?: string;
 
+  @IsOptional()
+  @IsBoolean()
+  isPublic?: boolean;
+
   @IsNumber()
   @IsNotEmpty()
   @Transform(({ value }) => Number(value)) // 👈 Converts a string from multipart to number
@@ -33,6 +43,7 @@ export interface MusicListResponseDto {
   coverUrl: string;
   playCount: number;
   mimeType: string;
+  isPublic: boolean;
 }
 
 export interface UploadedFileDto {
@@ -63,6 +74,10 @@ export class UpdateMusicDto {
   @IsString()
   @IsOptional()
   mimeType?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isPublic?: boolean;
 }
 
 export interface LikedSongItem {

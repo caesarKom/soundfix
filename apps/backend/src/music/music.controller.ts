@@ -117,7 +117,7 @@ async streamMusic(
     @UploadedFiles()
     files?: { audio?: UploadedFileDto[]; cover?: UploadedFileDto[] },
   ): Promise<Music> {
-    const userRole = (req.user?.role as string) || 'USER';
+    const userRole = (req.user?.role as string) || 'MEMBER';
     // Extract files if they were submitted in the form-data form
     const audioFile = files?.audio?.[0];
     const coverFile = files?.cover?.[0];

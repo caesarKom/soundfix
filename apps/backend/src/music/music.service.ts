@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { PrismaService } from '../prisma/prisma.service';
-import { StreamableFile } from '@nestjs/common';
 import { createReadStream, existsSync, statSync } from 'fs';
 import * as fs from 'fs/promises';
 import { join, extname } from 'path';
@@ -46,6 +45,7 @@ export class MusicService {
         title: dto.title,
         artist: dto.artist,
         album: dto.album || null,
+        isPublic: dto.isPublic || true,
         duration: dto.duration,
         audioUrl: audioPathName,
         coverUrl: coverPathName,
@@ -68,6 +68,7 @@ export class MusicService {
         coverUrl: true,
         playCount: true,
         mimeType: true,
+        isPublic: true
       },
     });
 

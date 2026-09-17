@@ -7,6 +7,7 @@ import { AuthModule } from '../auth/auth.module';
 @Module({
   imports: [PrismaModule, AuthModule],
   providers: [MusicService],
-  controllers: [MusicController]
+  controllers: [MusicController],
+  exports: [MusicService]
 })
 export class MusicModule {}

@@ -45,29 +45,62 @@ export class PlaylistService {
     });
   }
 
-  async findOne(
+async findOne(
     playlistId: string,
     userId: string,
     userRole: string,
     pageNum: number = 1,
     limitNum: number = 20,
   ): Promise<any> {
-    const skip = (pageNum - 1) * limitNum;
+    // VIRTUAL PLAYLIST OPERATION
+    if (playlistId === 'favorites') {
+      const likedSongsCount = await this.prisma.likedSong.count({
+        where: { userId },
+      });
 
+      const skip = (pageNum - 1) * limitNum;
+      const likedRecords = await this.prisma.likedSong.findMany({
+        where: { userId },
+        skip: skip,
+        take: limitNum,
+        include: {
+          music: {
+            select: {
+              id: true,
+              title: true,
+              artist: true,
+              album: true,
+              duration: true,
+              coverUrl: true,
+              mimeType: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      return {
+        id: 'favorites',
+        name: 'Favorite',
+        description: 'Your favorite songs',
+        coverUrl: 'assets/img/heart.png',
+        isPrivate: true,
+        userId,
+        songs: likedRecords.map(record => record.music),
+        _count: { songs: likedSongsCount }
+      };
+    }
+
+    // Original code for standard database playlists
+    const skip = (pageNum - 1) * limitNum;
     const playlist = await this.prisma.playlist.findUnique({
       where: { id: playlistId },
       select: { isPrivate: true, userId: true },
     });
 
     if (!playlist) throw new NotFoundException('Playlist not found');
-    if (
-      playlist.isPrivate &&
-      playlist.userId !== userId &&
-      userRole !== 'ADMIN'
-    ) {
-      throw new ForbiddenException(
-        'This playlist is private and you do not have permission to access it.',
-      );
+    if (playlist.isPrivate && playlist.userId !== userId && userRole !== 'ADMIN') {
+      throw new ForbiddenException('This playlist is private and you do not have permission to access it.');
     }
 
     const playlistWithSongs = await this.prisma.playlist.findUnique({
@@ -86,6 +119,9 @@ export class PlaylistService {
             mimeType: true,
           },
         },
+        _count: {
+          select: { songs: true }
+        }
       },
     });
 
@@ -223,7 +259,21 @@ export class PlaylistService {
     });
   }
 
-  async findAll(userRole: string): Promise<Playlist[]> {
+  async findAll(userRole: string, userId: string): Promise<any[]> {
+    const likedSongsCount = await this.prisma.likedSong.count({
+      where: { userId },
+    });
+
+    const favoritesPlaceholder = {
+      id: 'favorites', // Unikalny identyfikator operacyjny
+      name: 'Favorite',
+      description: 'Your favorite songs',
+      coverUrl: 'assets/img/heart.png', 
+      isPrivate: true,
+      userId,
+      _count: { songs: likedSongsCount },
+    };
+
     // If the request is from ADMIN, we return everything. If MEMBER, we return only public data.
     const whereCondition = userRole === 'ADMIN' ? {} : { isPrivate: false };
 
@@ -246,7 +296,7 @@ export class PlaylistService {
         createdAt: 'desc', // The newest playlists will be displayed at the top
       },
     });
-
-    return playlists;
+    // combine structures to create a virtual playlist at index 0
+    return [favoritesPlaceholder, ...playlists];
   }
 }

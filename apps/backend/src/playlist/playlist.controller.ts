@@ -28,11 +28,21 @@ import {
 import { Playlist } from '../generated/prisma/client';
 import type { UploadedFileDto } from '../music/dto/music.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { MusicService } from '../music/music.service';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('playlists')
 export class PlaylistController {
-  constructor(private readonly playlistService: PlaylistService) {}
+  constructor(private readonly playlistService: PlaylistService, private readonly musicService: MusicService) {}
+
+   // POST /v1/playlists/favorites/toggle/:musicId
+  @Post('favorites/toggle/:musicId')
+  async toggleFavorite(
+    @Param('musicId') musicId: string,
+    @CurrentUser() user: { id: string },
+  ) {
+    return this.musicService.toggleLikeSong(musicId, user.id);
+  }
 
   @Post()
   @UseInterceptors(FileInterceptor('cover'))
@@ -47,9 +57,10 @@ export class PlaylistController {
   @Get() // GET /v1/playlists
   async getAllPublicPlaylists(
     @Req() req: Record<string, any>,
-  ): Promise<Playlist[]> {
+    @CurrentUser() userId: string,
+  ): Promise<any[]> {
     const userRole = (req.user?.role as string) || 'MEMBER';
-    return this.playlistService.findAll(userRole);
+    return this.playlistService.findAll(userRole, userId);
   }
 
   @Get(':id')

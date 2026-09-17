@@ -57,8 +57,8 @@ export class PlaylistController {
     @Param('id') id: string,
     @CurrentUser() userId: string,
     @Req() req: Record<string, any>,
-    @Query() page?: number,
-    limit?: number,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
   ): Promise<any> {
     const userRole = (req.user?.role as string) || 'MEMBER';
     return this.playlistService.findOne(id, userId, userRole, page, limit);

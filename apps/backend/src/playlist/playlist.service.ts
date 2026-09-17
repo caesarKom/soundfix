@@ -268,7 +268,7 @@ async findOne(
       id: 'favorites', // Unikalny identyfikator operacyjny
       name: 'Favorite',
       description: 'Your favorite songs',
-      coverUrl: 'assets/img/heart.png', 
+      coverUrl: 'uploads/playlists/heart.png', 
       isPrivate: true,
       userId,
       _count: { songs: likedSongsCount },

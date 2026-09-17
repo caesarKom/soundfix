@@ -49,10 +49,10 @@ export class PlaylistService {
     playlistId: string,
     userId: string,
     userRole: string,
-    page: number = 1,
-    limit: number = 20,
+    pageNum: number = 1,
+    limitNum: number = 20,
   ): Promise<any> {
-    const skip = (page - 1) * limit;
+    const skip = (pageNum - 1) * limitNum;
 
     const playlist = await this.prisma.playlist.findUnique({
       where: { id: playlistId },
@@ -75,7 +75,7 @@ export class PlaylistService {
       include: {
         songs: {
           skip: skip,
-          take: limit,
+          take: limitNum,
           select: {
             id: true,
             title: true,

@@ -1,5 +1,12 @@
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 
 export class CreatePlaylistDto {
   @IsString()
@@ -43,4 +50,23 @@ export class UpdatePlaylistDto {
   @IsOptional()
   @IsString()
   coverUrl?: string;
+}
+
+export class PlaylistQueryDto {
+  @IsString()
+  playlistId!: string;
+
+  @IsString()
+  userId!: string;
+
+  @IsString()
+  userRole!: string;
+
+  @IsOptional()
+  @IsNumber()
+  page?: number = 1;
+  
+  @IsOptional()
+  @IsNumber()
+  limit?: number = 20;
 }

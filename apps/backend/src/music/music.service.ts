@@ -12,6 +12,7 @@ import { Music } from '../generated/prisma/client';
 import {
   CreateMusicDto,
   LikedSongItem,
+  MusicListQueryDto,
   MusicListResponseDto,
   UpdateMusicDto,
   UploadedFileDto,
@@ -57,8 +58,25 @@ export class MusicService {
     return newSong;
   }
 
-  async findAll(): Promise<MusicListResponseDto[]> {
+  async findAll(query: MusicListQueryDto): Promise<MusicListResponseDto[]> {
+    const { page = 1, limit = 20, search } = query;
+    const skip = (page - 1) * limit;
+    const where: any = {};
+
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { artist: { contains: search, mode: 'insensitive' } },
+        { album: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
     const records = await this.prisma.music.findMany({
+      skip: skip,
+      take: limit,
+      where: where,
+      orderBy: { createdAt: 'desc' },
+      
       select: {
         id: true,
         title: true,

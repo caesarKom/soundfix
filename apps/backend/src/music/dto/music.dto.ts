@@ -82,6 +82,20 @@ export class UpdateMusicDto {
   isPublic?: boolean;
 }
 
+export class MusicListQueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsNumber()
+  page?: number = 1;
+
+  @IsOptional()
+  @IsNumber()
+  limit?: number = 20;
+}
+
 export interface LikedSongItem {
   id: string;
   title: string;

@@ -22,6 +22,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { MusicService } from './music.service';
 import {
   CreateMusicDto,
+  MusicListQueryDto,
   MusicListResponseDto,
   UpdateMusicDto,
   UploadedFileDto,
@@ -82,8 +83,8 @@ export class MusicController {
   }
 
   @Get()
-  async getAllMusic(): Promise<MusicListResponseDto[]> {
-    return this.musicService.findAll();
+  async getAllMusic(@Query() query: MusicListQueryDto): Promise<MusicListResponseDto[]> {
+    return this.musicService.findAll(query);
   }
 
   @Get(':id')
@@ -93,7 +94,6 @@ export class MusicController {
 
   // 🎧 Safe streaming audio
 @Get('stream/:id')
-@UseGuards(AuthGuard('jwt'))
 async streamMusic(
   @Param('id') id: string,
   @Headers('range') range: string | undefined,

@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UploadedFile,
   UseGuards,
@@ -15,8 +16,15 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { PlaylistService } from './playlist.service';
-import { CreatePlaylistDto, ManagePlaylistSongsDto, UpdatePlaylistDto } from './dto/playlist.dto';
-import { CurrentUser, ObjectUser } from '../auth/decorators/current-user.decorator';
+import {
+  CreatePlaylistDto,
+  ManagePlaylistSongsDto,
+  UpdatePlaylistDto,
+} from './dto/playlist.dto';
+import {
+  CurrentUser,
+  ObjectUser,
+} from '../auth/decorators/current-user.decorator';
 import { Playlist } from '../generated/prisma/client';
 import type { UploadedFileDto } from '../music/dto/music.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -49,9 +57,11 @@ export class PlaylistController {
     @Param('id') id: string,
     @CurrentUser() userId: string,
     @Req() req: Record<string, any>,
+    @Query() page?: number,
+    limit?: number,
   ): Promise<any> {
     const userRole = (req.user?.role as string) || 'MEMBER';
-    return this.playlistService.findOne(id, userId, userRole);
+    return this.playlistService.findOne(id, userId, userRole, page, limit);
   }
 
   @Post(':id/songs')
@@ -64,7 +74,7 @@ export class PlaylistController {
     await this.playlistService.addSong(id, userId, dto);
   }
 
-   @Patch(':id')
+  @Patch(':id')
   @UseInterceptors(FileInterceptor('cover'))
   async update(
     @Param('id') id: string,

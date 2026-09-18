@@ -45,6 +45,20 @@ export class PlaylistService {
   }
 
  async findOne(id: string, userId: string, userRole: string): Promise<any> {
+    // Virtual record
+    if (id === 'favorites') {
+    const likedSongsCount = await this.prisma.likedSong.count({ where: { userId } });
+    return {
+        id: 'favorites',
+        name: 'Favorite',
+        description: 'Your favorite songs',
+        coverUrl: 'uploads/playlists/heart.png',
+        isPrivate: true,
+        userId,
+        _count: { songs: likedSongsCount },
+      };
+    }
+
     const playlist = await this.prisma.playlist.findUnique({
       where: { id },
       include: {
@@ -143,7 +157,7 @@ async findPlaylistSongs(
       },
     });
 
-    return playlistWithSongs;
+    return playlistWithSongs?.songs || [];
   }
 
   // Adding a song to a playlist (Owner only)
@@ -283,7 +297,7 @@ async findPlaylistSongs(
     });
 
     const favoritesPlaceholder = {
-      id: 'favorites', // Unikalny identyfikator operacyjny
+      id: 'favorites',
       name: 'Favorite',
       description: 'Your favorite songs',
       coverUrl: 'uploads/playlists/heart.png', 

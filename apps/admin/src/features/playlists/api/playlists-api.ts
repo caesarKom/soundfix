@@ -14,6 +14,14 @@ export const playlistsApi = {
     return data;
   },
 
+   // Fetch  songs
+  getListSongs: async (id: string, pageNum: number): Promise<any> => {
+    const { data } = await apiClient.get<AdminPlaylist>(`/playlists/${id}/song`, {
+      params: { page: pageNum, limit: 20 }
+    });
+    return data;
+  },
+
   // Create a new global playlist
  create: async (formData: FormData): Promise<AdminPlaylist> => {
   const { data } = await apiClient.post<AdminPlaylist>('/playlists', formData, {

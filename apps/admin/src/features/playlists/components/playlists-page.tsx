@@ -1,23 +1,20 @@
-import { useState } from "react"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMemo, useState } from "react"
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery, type InfiniteData } from "@tanstack/react-query"
 import { playlistsApi } from "../api/playlists-api.ts"
 import { AdminModal } from "../../../components/admin-modal.tsx"
 import { PlaylistCreateForm } from "./playlist-create-form.tsx"
 import { PlaylistEditForm } from "./playlist-edit-form.tsx"
 import { PlaylistTrackManager } from "./playlist-track-manager.tsx"
 import type { AdminPlaylist } from "../types/playlists.ts"
+import type { Track } from "@/features/music/types/music.ts"
 
 export function PlaylistsPage() {
   const queryClient = useQueryClient()
-  const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(
-    null,
-  )
+  const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(null)
 
   // Modal visibility states
   const [isCreateOpen, setIsUploadOpen] = useState(false)
-  const [editingPlaylist, setEditingPlaylist] = useState<AdminPlaylist | null>(
-    null,
-  )
+  const [editingPlaylist, setEditingPlaylist] = useState<AdminPlaylist | null>(null)
   const [trackManagerPlaylist, setTrackManagerPlaylist] =
     useState<AdminPlaylist | null>(null)
 
@@ -37,6 +34,24 @@ export function PlaylistsPage() {
     enabled: !!selectedPlaylistId,
   })
 
+  const { data: songs, isLoading: isLoadingSongs } = useInfiniteQuery<Track[], Error, InfiniteData<Track[], number>, [string], number>({
+    queryKey: ["admin-playlist-songs",],
+    queryFn: () => playlistsApi.getListSongs(selectedPlaylistId!, 1),
+    initialPageParam:1,
+    getNextPageParam: (lastPage, allPages) => {
+      if (!lastPage || lastPage.length < 20) return undefined;
+      return allPages.length + 1;
+    },
+    enabled: !!selectedPlaylistId,
+    staleTime: 1000 * 60 * 2,
+
+  })
+  const playlistSongs = useMemo(() => {
+    if (!songs || !songs.pages) return [];
+    return songs.pages.flatMap((page) => page) || [];
+  }, [songs])
+
+console.log("SONGS : ", playlistSongs)
   const deletePlaylistMutation = useMutation({
     mutationFn: playlistsApi.delete,
     onSuccess: () => {
@@ -227,13 +242,13 @@ export function PlaylistsPage() {
                 </div>
               </div>
               <div className="p-4 max-h-[60vh] overflow-y-auto">
-                {isLoadingDetails ? (
+                {isLoadingSongs ? (
                   <p className="text-xs text-center text-slate-500 py-6 animate-pulse">
                     Inspecting composition...
                   </p>
-                ) : activePlaylist?.songs && activePlaylist.songs.length > 0 ? (
+                ) : playlistSongs && playlistSongs.length > 0 ? (
                   <div className="space-y-2">
-                    {activePlaylist.songs.map((song) => (
+                    {playlistSongs.map((song) => (
                       <div
                         key={song.id}
                         className="flex items-center justify-between p-2.5 bg-slate-950/40 border border-slate-800/60 rounded-lg hover:border-slate-700 transition-colors"

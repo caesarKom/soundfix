@@ -101,7 +101,7 @@ async findPlaylistSongs(
         id: 'favorites',
         name: 'Favorite',
         description: 'Your favorite songs',
-        coverUrl: 'assets/img/heart.png',
+        coverUrl: 'uploads/playlists/heart.png',
         isPrivate: true,
         userId,
         songs: likedRecords.map(record => record.music),

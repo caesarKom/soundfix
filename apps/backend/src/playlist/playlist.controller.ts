@@ -68,13 +68,23 @@ export class PlaylistController {
     @Param('id') id: string,
     @CurrentUser() userId: string,
     @Req() req: Record<string, any>,
+  ): Promise<any> {
+    const userRole = (req.user?.role as string) || 'MEMBER';
+    return this.playlistService.findOne(id, userId, userRole);
+  }
+
+    @Get(':id/song')
+  async getPlaylistSong(
+    @Param('id') id: string,
+    @CurrentUser() userId: string,
+    @Req() req: Record<string, any>,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ): Promise<any> {
     const pageNum = page ? parseInt(page, 10) : 1;
     const limitNum = limit ? parseInt(limit, 10) : 20;
     const userRole = (req.user?.role as string) || 'MEMBER';
-    return this.playlistService.findOne(id, userId, userRole, pageNum, limitNum);
+    return this.playlistService.findPlaylistSongs(id, userId, userRole, pageNum, limitNum);
   }
 
   @Post(':id/songs')

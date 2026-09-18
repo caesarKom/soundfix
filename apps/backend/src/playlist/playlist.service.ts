@@ -11,7 +11,6 @@ import {
   ManagePlaylistSongsDto,
   UpdatePlaylistDto,
 } from './dto/playlist.dto';
-import { Playlist } from '../generated/prisma/client';
 import { UploadedFileDto } from '../music/dto/music.dto';
 
 @Injectable()
@@ -45,7 +44,26 @@ export class PlaylistService {
     });
   }
 
-async findOne(
+ async findOne(id: string, userId: string, userRole: string): Promise<any> {
+    const playlist = await this.prisma.playlist.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: { songs: true },
+        },
+      },
+    });
+
+    if (!playlist) throw new NotFoundException('Playlist not found');
+
+    if (playlist.isPrivate && playlist.userId !== userId && userRole !== 'ADMIN') {
+      throw new ForbiddenException('This playlist is private');
+    }
+
+    return playlist;
+  }
+
+async findPlaylistSongs(
     playlistId: string,
     userId: string,
     userRole: string,

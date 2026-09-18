@@ -28,7 +28,7 @@ export function PlaylistsPage() {
   })
   const IMAGE_URL = import.meta.env.VITE_BACKEND_URL;
 
-  const { data: activePlaylist, isLoading: isLoadingDetails } = useQuery({
+  const { data: activePlaylist } = useQuery({
     queryKey: ["admin-playlist-details", selectedPlaylistId],
     queryFn: () => playlistsApi.getById(selectedPlaylistId!),
     enabled: !!selectedPlaylistId,

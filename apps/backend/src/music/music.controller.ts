@@ -83,8 +83,9 @@ export class MusicController {
   }
 
   @Get()
-  async getAllMusic(@Query() query: MusicListQueryDto): Promise<MusicListResponseDto[]> {
-    return this.musicService.findAll(query);
+  
+  async getAllMusic(@Query() query: MusicListQueryDto, @CurrentUser() userId: string,): Promise<MusicListResponseDto[]> {
+    return this.musicService.findAll(query, userId);
   }
 
   @Get(':id')

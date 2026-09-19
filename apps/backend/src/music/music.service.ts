@@ -58,7 +58,7 @@ export class MusicService {
     return newSong;
   }
 
-  async findAll(query: MusicListQueryDto): Promise<MusicListResponseDto[]> {
+  async findAll(query: MusicListQueryDto, userId:string): Promise<MusicListResponseDto[]> {
     const { page = 1, limit = 20, search } = query;
     const skip = (page - 1) * limit;
     const where: any = {};
@@ -86,11 +86,19 @@ export class MusicService {
         coverUrl: true,
         playCount: true,
         mimeType: true,
-        isPublic: true
+        isPublic: true,
+        likedBy: {
+          where: { userId },
+          select: { id: true }
+        }
       },
     });
 
-    return records;
+   // map the result by converting the likedSongs array to a simple boolean isLiked
+   return records.map((record) => {
+    const { likedBy, ...rest } = record;
+    return { ...rest, isLiked: likedBy.length > 0 };
+   })
   }
 
   async findOne(id: string): Promise<Music> {

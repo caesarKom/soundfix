@@ -17,6 +17,9 @@ import { UploadedFileDto } from '../music/dto/music.dto';
 export class PlaylistService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * Creates a new standard database playlist
+   */
   async create(
     dto: CreatePlaylistDto,
     userId: string,
@@ -44,11 +47,14 @@ export class PlaylistService {
     });
   }
 
- async findOne(id: string, userId: string, userRole: string): Promise<any> {
-    // Virtual record
+  /**
+   * Fetches metadata for a single playlist (including virtual favorites placeholder)
+   */
+  async findOne(id: string, userId: string, userRole: string): Promise<any> {
+    // Return virtual playlist metadata for the 'favorites' ID
     if (id === 'favorites') {
-    const likedSongsCount = await this.prisma.likedSong.count({ where: { userId } });
-    return {
+      const likedSongsCount = await this.prisma.likedSong.count({ where: { userId } });
+      return {
         id: 'favorites',
         name: 'Favorite',
         description: 'Your favorite songs',
@@ -77,20 +83,24 @@ export class PlaylistService {
     return playlist;
   }
 
-async findPlaylistSongs(
+  /**
+   * Fetches paginated songs for a playlist with dynamic isLiked injection
+   */
+  async findPlaylistSongs(
     playlistId: string,
     userId: string,
     userRole: string,
     pageNum: number = 1,
     limitNum: number = 20,
   ): Promise<any> {
-    // VIRTUAL PLAYLIST OPERATION
+    const skip = (pageNum - 1) * limitNum;
+
+    // VIRTUAL PLAYLIST OPERATION (Fetch from LikedSong table)
     if (playlistId === 'favorites') {
       const likedSongsCount = await this.prisma.likedSong.count({
         where: { userId },
       });
 
-      const skip = (pageNum - 1) * limitNum;
       const likedRecords = await this.prisma.likedSong.findMany({
         where: { userId },
         skip: skip,
@@ -118,13 +128,16 @@ async findPlaylistSongs(
         coverUrl: 'uploads/playlists/heart.png',
         isPrivate: true,
         userId,
-        songs: likedRecords.map(record => record.music),
+        songs: likedRecords.map(record => ({
+          ...record.music,
+          isLiked: true, // Every song in the favorites list is inherently liked
+        })),
         _count: { songs: likedSongsCount }
       };
     }
+    
 
-    // Original code for standard database playlists
-    const skip = (pageNum - 1) * limitNum;
+    // Standard database playlist operation
     const playlist = await this.prisma.playlist.findUnique({
       where: { id: playlistId },
       select: { isPrivate: true, userId: true },
@@ -150,17 +163,32 @@ async findPlaylistSongs(
             coverUrl: true,
             mimeType: true,
           },
+          include: {
+            // Check if the current user liked this song to inject the boolean state
+            likedBy: {
+              where: { userId },
+              select: { id: true },
+            },
+          },
         },
-        _count: {
-          select: { songs: true }
-        }
       },
     });
 
-    return playlistWithSongs?.songs || [];
+    if (!playlistWithSongs) return [];
+
+    // Map songs array to extract likedSongs relation into a clean isLiked boolean
+    return playlistWithSongs.songs.map(song => {
+      const { likedBy, ...rest } = song;
+      return {
+        ...rest,
+        isLiked: likedBy.length > 0,
+      };
+    });
   }
 
-  // Adding a song to a playlist (Owner only)
+  /**
+   * Adds a song link to a custom playlist (Owner only)
+   */
   async addSong(
     id: string,
     userId: string,
@@ -171,13 +199,11 @@ async findPlaylistSongs(
     if (playlist.userId !== userId)
       throw new ForbiddenException('You do not own this playlist');
 
-    // check whether the song exists in the database at all
     const song = await this.prisma.music.findUnique({
       where: { id: dto.songId },
     });
     if (!song) throw new NotFoundException('Song not found');
 
-    // Prisma Many-to-Many relationship notation via 'connect'
     await this.prisma.playlist.update({
       where: { id },
       data: {
@@ -188,7 +214,9 @@ async findPlaylistSongs(
     });
   }
 
-  // Removing a song from a playlist (Owner only)
+  /**
+   * Removes a song link from a custom playlist (Owner only)
+   */
   async removeSong(
     id: string,
     userId: string,
@@ -209,7 +237,9 @@ async findPlaylistSongs(
     });
   }
 
-  // Update playlist
+  /**
+   * Updates playlist metadata and covers
+   */
   async update(
     id: string,
     userId: string,
@@ -232,19 +262,16 @@ async findPlaylistSongs(
     };
 
     if (dto.isPrivate !== undefined) {
-      updateData.isPrivate = false;
+      updateData.isPrivate = dto.isPrivate;
     }
 
     if (newCover) {
       if (playlist.coverUrl) {
         try {
-          const oldCoverPath: string = join(
-            process.cwd(),
-            playlist.coverUrl as string,
-          );
+          const oldCoverPath: string = join(process.cwd(), playlist.coverUrl as string);
           await fs.unlink(oldCoverPath);
         } catch {
-          /* ignore the missing file*/
+          /* ignore missing files */
         }
       }
 
@@ -264,7 +291,9 @@ async findPlaylistSongs(
     });
   }
 
-  // Completely deleting the playlist
+  /**
+   * Deletes the playlist completely from the database
+   */
   async remove(id: string, userId: string, userRole: string) {
     const playlist = await this.findOne(id, userId, userRole);
 
@@ -276,13 +305,10 @@ async findPlaylistSongs(
 
     if (playlist.coverUrl) {
       try {
-        const oldCoverPath: string = join(
-          process.cwd(),
-          playlist.coverUrl as string,
-        );
+        const oldCoverPath: string = join(process.cwd(), playlist.coverUrl as string);
         await fs.unlink(oldCoverPath);
       } catch {
-        /* ignore the missing file*/
+        /* ignore missing files */
       }
     }
 
@@ -291,6 +317,9 @@ async findPlaylistSongs(
     });
   }
 
+  /**
+   * Returns all playlists, injecting the virtual Favorite placeholder at index 0
+   */
   async findAll(userRole: string, userId: string): Promise<any[]> {
     const likedSongsCount = await this.prisma.likedSong.count({
       where: { userId },
@@ -306,29 +335,26 @@ async findPlaylistSongs(
       _count: { songs: likedSongsCount },
     };
 
-    // If the request is from ADMIN, we return everything. If MEMBER, we return only public data.
     const whereCondition = userRole === 'ADMIN' ? {} : { isPrivate: false };
 
     const playlists = await this.prisma.playlist.findMany({
       where: whereCondition,
       include: {
-        // extract basic information about the owner (e.g. to display who created the playlist)
         owner: {
           select: {
             id: true,
             name: true,
           },
         },
-        // count songs in a playlist instead of downloading entire files (optimizing database performance)
         _count: {
           select: { songs: true },
         },
       },
       orderBy: {
-        createdAt: 'desc', // The newest playlists will be displayed at the top
+        createdAt: 'desc',
       },
     });
-    // combine structures to create a virtual playlist at index 0
+
     return [favoritesPlaceholder, ...playlists];
   }
 }

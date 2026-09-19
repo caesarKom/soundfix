@@ -272,12 +272,12 @@ export class PlaylistService {
     });
 
     // Sort in RAM: looking for an item named 'Favorite' belonging to the user
-    const favIndex = playlists.findIndex(p => p.name === 'Favorite' && p.userId === userId);
+    // const favIndex = playlists.findIndex(p => p.name === 'Favorite' && p.userId === userId);
     
-    if (favIndex > -1) {
-      const [favorites] = playlists.splice(favIndex, 1);
-      return [favorites, ...playlists]; // indeks 0
-    }
+    // if (favIndex > -1) {
+    //   const [favorites] = playlists.splice(favIndex, 1);
+    //   return [favorites, ...playlists]; // indeks 0
+    // }
 
     return playlists;
   }

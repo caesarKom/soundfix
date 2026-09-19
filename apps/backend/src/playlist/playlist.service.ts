@@ -253,7 +253,14 @@ export class PlaylistService {
    * Returns all playlists, injecting the virtual Favorite placeholder at index 0
    */
   async findAll(userRole: string, userId: string): Promise<any[]> {
-    const whereCondition = userRole === 'ADMIN' ? {} : { isPrivate: false };
+    const whereCondition = userRole === 'ADMIN' 
+      ? {} 
+      : {
+          OR: [
+            { isPrivate: false },
+            { userId: userId } // It allows the user to see their own 'Favorite' playlist and other hidden collections
+          ]
+        };
 
     const playlists = await this.prisma.playlist.findMany({
       where: whereCondition,

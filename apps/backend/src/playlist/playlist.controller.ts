@@ -25,27 +25,13 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Playlist } from '../generated/prisma/client';
 import type { UploadedFileDto } from '../music/dto/music.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { MusicService } from '../music/music.service';
 
 @UseGuards(AuthGuard('jwt'))
 @Controller('playlists')
 export class PlaylistController {
   constructor(
     private readonly playlistService: PlaylistService,
-    private readonly musicService: MusicService,
   ) {}
-
-  /**
-   * Toggles heart status for a specific song (Favorite / Unfavorite)
-   * POST /v1/playlists/favorites/toggle/:musicId
-   */
-  @Post('favorites/toggle/:musicId')
-  async toggleFavorite(
-    @Param('musicId') musicId: string,
-    @CurrentUser() userId: string, // Returns string ID directly
-  ) {
-    return this.musicService.toggleLikeSong(musicId, userId);
-  }
 
   /**
    * Creates a custom playlist with an optional image file cover

@@ -47,24 +47,7 @@ export class PlaylistService {
     });
   }
 
-  /**
-   * Fetches metadata for a single playlist (including virtual favorites placeholder)
-   */
-  async findOne(id: string, userId: string, userRole: string): Promise<any> {
-    // Return virtual playlist metadata for the 'favorites' ID
-    if (id === 'favorites') {
-      const likedSongsCount = await this.prisma.likedSong.count({ where: { userId } });
-      return {
-        id: 'favorites',
-        name: 'Favorite',
-        description: 'Your favorite songs',
-        coverUrl: 'uploads/playlists/heart.png',
-        isPrivate: true,
-        userId,
-        _count: { songs: likedSongsCount },
-      };
-    }
-
+   async findOne(id: string, userId: string, userRole: string): Promise<any> {
     const playlist = await this.prisma.playlist.findUnique({
       where: { id },
       include: {
@@ -83,60 +66,15 @@ export class PlaylistService {
     return playlist;
   }
 
-  /**
-   * Fetches paginated songs for a playlist with dynamic isLiked injection
-   */
   async findPlaylistSongs(
     playlistId: string,
     userId: string,
     userRole: string,
     pageNum: number = 1,
     limitNum: number = 20,
-  ): Promise<any> {
+  ): Promise<any[]> {
     const skip = (pageNum - 1) * limitNum;
 
-    // VIRTUAL PLAYLIST OPERATION (Fetch from LikedSong table)
-    if (playlistId === 'favorites') {
-      const likedSongsCount = await this.prisma.likedSong.count({
-        where: { userId },
-      });
-
-      const likedRecords = await this.prisma.likedSong.findMany({
-        where: { userId },
-        skip: skip,
-        take: limitNum,
-        include: {
-          music: {
-            select: {
-              id: true,
-              title: true,
-              artist: true,
-              album: true,
-              duration: true,
-              coverUrl: true,
-              mimeType: true,
-            },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-      });
-
-      return {
-        id: 'favorites',
-        name: 'Favorite',
-        description: 'Your favorite songs',
-        coverUrl: 'uploads/playlists/heart.png',
-        isPrivate: true,
-        userId,
-        songs: likedRecords.map(record => ({
-          ...record.music,
-          isLiked: true, // Every song in the favorites list is inherently liked
-        })),
-        _count: { songs: likedSongsCount }
-      };
-    }
-
-    // Standard database playlist operation
     const playlist = await this.prisma.playlist.findUnique({
       where: { id: playlistId },
       select: { isPrivate: true, userId: true },
@@ -147,7 +85,6 @@ export class PlaylistService {
       throw new ForbiddenException('This playlist is private and you do not have permission to access it.');
     }
 
-    // FIXED: Rewritten to use strictly 'select' strategy to avoid Prisma compilation error
     const playlistWithSongs = await this.prisma.playlist.findUnique({
       where: { id: playlistId },
       select: {
@@ -162,7 +99,6 @@ export class PlaylistService {
             duration: true,
             coverUrl: true,
             mimeType: true,
-            // Instead of nested include, we select the relation directly
             likedBy: {
               where: { userId },
               select: { id: true },
@@ -174,7 +110,6 @@ export class PlaylistService {
 
     if (!playlistWithSongs || !playlistWithSongs.songs) return [];
 
-    // Map songs array to extract likedSongs relation into a clean isLiked boolean
     return playlistWithSongs.songs.map(song => {
       const { likedBy, ...rest } = song;
       return {
@@ -318,40 +253,25 @@ export class PlaylistService {
    * Returns all playlists, injecting the virtual Favorite placeholder at index 0
    */
   async findAll(userRole: string, userId: string): Promise<any[]> {
-    const likedSongsCount = await this.prisma.likedSong.count({
-      where: { userId },
-    });
-
-    const favoritesPlaceholder = {
-      id: 'favorites',
-      name: 'Favorite',
-      description: 'Your favorite songs',
-      coverUrl: 'uploads/playlists/heart.png', 
-      isPrivate: true,
-      userId,
-      _count: { songs: likedSongsCount },
-    };
-
     const whereCondition = userRole === 'ADMIN' ? {} : { isPrivate: false };
 
     const playlists = await this.prisma.playlist.findMany({
       where: whereCondition,
       include: {
-        owner: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        _count: {
-          select: { songs: true },
-        },
+        owner: { select: { id: true, name: true } },
+        _count: { select: { songs: true } },
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: { createdAt: 'desc' },
     });
 
-    return [favoritesPlaceholder, ...playlists];
+    // Sort in RAM: looking for an item named 'Favorite' belonging to the user
+    const favIndex = playlists.findIndex(p => p.name === 'Favorite' && p.userId === userId);
+    
+    if (favIndex > -1) {
+      const [favorites] = playlists.splice(favIndex, 1);
+      return [favorites, ...playlists]; // indeks 0
+    }
+
+    return playlists;
   }
 }

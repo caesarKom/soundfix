@@ -3,10 +3,9 @@ import { PlaylistService } from './playlist.service';
 import { PlaylistController } from './playlist.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { AuthModule } from '../auth/auth.module';
-import { MusicModule } from '../music/music.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule,MusicModule],
+  imports: [PrismaModule, AuthModule],
   providers: [PlaylistService],
   controllers: [PlaylistController],
   exports: [PlaylistService],

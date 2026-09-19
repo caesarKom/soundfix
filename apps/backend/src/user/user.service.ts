@@ -52,6 +52,15 @@ export class UserService {
         password: hashedPassword,
         isVerified: false,
         profile: { create: {} },
+
+        playlists: {
+          create: {
+            name: 'Favorite',
+            description: 'Your favorite songs',
+            isPrivate: true,
+            coverUrl: 'uploads/playlists/heart.png',
+          }
+        }
       },
     });
 

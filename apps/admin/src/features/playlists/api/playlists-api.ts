@@ -1,3 +1,4 @@
+// apps/admin/src/features/playlists/api/playlists-api.ts
 import { apiClient } from '../../../api/api-client.ts';
 import type { AdminPlaylist } from '../types/playlists.ts';
 
@@ -8,36 +9,37 @@ export const playlistsApi = {
     return data;
   },
 
-  // Fetch specific playlist detail along with its songs
+  // Fetch specific playlist detail
   getById: async (id: string): Promise<AdminPlaylist> => {
     const { data } = await apiClient.get<AdminPlaylist>(`/playlists/${id}`);
     return data;
   },
 
-   // Fetch  songs
-  getListSongs: async (id: string, pageNum: number): Promise<any> => {
-    const { data } = await apiClient.get<AdminPlaylist>(`/playlists/${id}/song`, {
+  // returns the paginated array directly
+  getListSongs: async (id: string, pageNum: number): Promise<any[]> => {
+    const { data } = await apiClient.get<any[]>(`/playlists/${id}/songs`, {
       params: { page: pageNum, limit: 20 }
     });
     return data;
   },
 
   // Create a new global playlist
- create: async (formData: FormData): Promise<AdminPlaylist> => {
-  const { data } = await apiClient.post<AdminPlaylist>('/playlists', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
-  return data;
-},
+  create: async (formData: FormData): Promise<AdminPlaylist> => {
+    const { data } = await apiClient.post<AdminPlaylist>('/playlists', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return data;
+  },
 
-update: async ({ id, formData }: { id: string; formData: FormData }): Promise<AdminPlaylist> => {
-  const { data } = await apiClient.patch<AdminPlaylist>(`/playlists/${id}`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
-  return data;
-},
+  // Update existing playlist
+  update: async ({ id, formData }: { id: string; formData: FormData }): Promise<AdminPlaylist> => {
+    const { data } = await apiClient.patch<AdminPlaylist>(`/playlists/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return data;
+  },
 
   // Link a track to a playlist
   addTrack: async (playlistId: string, trackId: string): Promise<void> => {
@@ -46,7 +48,6 @@ update: async ({ id, formData }: { id: string; formData: FormData }): Promise<Ad
 
   // Unlink a track from a playlist
   removeTrack: async (playlistId: string, trackId: string): Promise<void> => {
-    // Usually NestJS takes trackId in body or query depending on implementation
     await apiClient.delete(`/playlists/${playlistId}/songs`, { data: { songId: trackId } });
   },
 

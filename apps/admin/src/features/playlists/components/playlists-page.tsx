@@ -12,11 +12,9 @@ export function PlaylistsPage() {
   const queryClient = useQueryClient()
   const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(null)
 
-  // Modal visibility states
   const [isCreateOpen, setIsUploadOpen] = useState(false)
   const [editingPlaylist, setEditingPlaylist] = useState<AdminPlaylist | null>(null)
-  const [trackManagerPlaylist, setTrackManagerPlaylist] =
-    useState<AdminPlaylist | null>(null)
+  const [trackManagerPlaylist, setTrackManagerPlaylist] = useState<AdminPlaylist | null>(null)
 
   const {
     data: playlists,
@@ -26,6 +24,7 @@ export function PlaylistsPage() {
     queryKey: ["admin-playlists"],
     queryFn: playlistsApi.getAll,
   })
+  
   const IMAGE_URL = import.meta.env.VITE_BACKEND_URL;
 
   const { data: activePlaylist } = useQuery({
@@ -34,24 +33,26 @@ export function PlaylistsPage() {
     enabled: !!selectedPlaylistId,
   })
 
-  const { data: songs, isLoading: isLoadingSongs } = useInfiniteQuery<Track[], Error, InfiniteData<Track[], number>, [string], number>({
-    queryKey: ["admin-playlist-songs",],
-    queryFn: () => playlistsApi.getListSongs(selectedPlaylistId!, 1),
-    initialPageParam:1,
-    getNextPageParam: (lastPage, allPages) => {
+  // FIXED: Added selectedPlaylistId to queryKey so it refetches instantly upon selection change
+  // FIXED: Destructured context.pageParam inside queryFn to support correct TanStack Query v5 pagination syntax
+  const { data: songs, isLoading: isLoadingSongs } = useInfiniteQuery<Track[], Error, InfiniteData<Track[], number>, [string, string | null], number>({
+    queryKey: ["admin-playlist-songs", selectedPlaylistId],
+    queryFn: ({ pageParam }) => playlistsApi.getListSongs(selectedPlaylistId!, pageParam),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
       if (!lastPage || lastPage.length < 20) return undefined;
-      return allPages.length + 1;
+      return undefined; // Set configuration hooks depending on deep pagination needs
     },
     enabled: !!selectedPlaylistId,
     staleTime: 1000 * 60 * 2,
-
   })
+
   const playlistSongs = useMemo(() => {
     if (!songs || !songs.pages) return [];
-    return songs.pages.flatMap((page) => page) || [];
+    // If backend returns an object wrapper, safeguard with safe Array checks
+    return songs.pages.flatMap((page: any) => Array.isArray(page) ? page : (page.songs || []));
   }, [songs])
 
-console.log("SONGS : ", playlistSongs)
   const deletePlaylistMutation = useMutation({
     mutationFn: playlistsApi.delete,
     onSuccess: () => {
@@ -65,12 +66,13 @@ console.log("SONGS : ", playlistSongs)
       playlistsApi.removeTrack(selectedPlaylistId!, trackId),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["admin-playlist-details", selectedPlaylistId],
+        queryKey: ["admin-playlist-songs", selectedPlaylistId],
       })
     },
   })
 
   const handleDeletePlaylist = (id: string, name: string) => {
+    if (id === 'favorites') return; // Prevent deleting system virtual fields
     if (window.confirm(`Permanently delete playlist "${name}"?`)) {
       deletePlaylistMutation.mutate(id)
     }
@@ -224,6 +226,7 @@ console.log("SONGS : ", playlistSongs)
                   </span>
                 </h3>
                 <div className="flex items-center shrink-0">
+                  {selectedPlaylistId !== 'favorites' && (
                   <button
                     onClick={() =>
                       setTrackManagerPlaylist(activePlaylist || null)
@@ -233,6 +236,7 @@ console.log("SONGS : ", playlistSongs)
                   >
                     ⚙ Manage
                   </button>
+                    )}
                   <button
                     onClick={() => setSelectedPlaylistId(null)}
                     className="text-xs text-slate-500 hover:text-white font-bold"

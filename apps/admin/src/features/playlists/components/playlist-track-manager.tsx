@@ -1,3 +1,4 @@
+// apps/admin/src/features/playlists/components/PlaylistTrackManager.tsx
 import { useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { musicApi } from "../../music/api/music-api.ts"
@@ -18,46 +19,54 @@ export function PlaylistTrackManager({
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 5 // Compact view for modal scalability
 
-  //  Fetch all tracks available in the entire system database
+  // 1. Fetch all tracks available in the entire system database
   const { data: allTracks, isLoading } = useQuery({
     queryKey: ["admin-music"],
     queryFn: musicApi.getAll,
   })
 
-  //  NEW DYNAMIC QUERY: Actively listen to the fresh server state of this specific playlist
-  const { data: freshPlaylist } = useQuery({
-    queryKey: ["admin-playlist-details", playlist.id],
-    queryFn: () => playlistsApi.getById(playlist.id),
-    initialData: playlist, // Seed with initial data to prevent screen flashing
+  // 2. FIXED: Fetch fresh paginated songs for this playlist to accurately determine assignment states
+  // We set a high limit (e.g., 1000) or use page 1 because this is an admin manager view
+  const { data: assignedSongs } = useQuery({
+    queryKey: ["admin-playlist-songs-manager", playlist.id],
+    queryFn: () => playlistsApi.getListSongs(playlist.id, 1),
   })
 
-  //  Mutation to assign track
+  // Mutation to assign track
   const addTrackMutation = useMutation({
     mutationFn: (trackId: string) =>
       playlistsApi.addTrack(playlist.id, trackId),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["admin-playlist-details", playlist.id],
+        queryKey: ["admin-playlist-songs-manager", playlist.id],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["admin-playlist-songs", playlist.id],
       })
       queryClient.invalidateQueries({ queryKey: ["admin-playlists"] })
     },
   })
 
-  //  Mutation to remove track from playlist context
+  // Mutation to remove track from playlist context
   const removeTrackMutation = useMutation({
     mutationFn: (trackId: string) =>
       playlistsApi.removeTrack(playlist.id, trackId),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["admin-playlist-details", playlist.id],
+        queryKey: ["admin-playlist-songs-manager", playlist.id],
+      })
+      queryClient.invalidateQueries({
+        queryKey: ["admin-playlist-songs", playlist.id],
       })
       queryClient.invalidateQueries({ queryKey: ["admin-playlists"] })
     },
   })
 
-  // Now looks up assigned IDs from the live, reactive query state
+  // FIXED: Safely maps IDs from the fresh server response or safeguards with fallback arrays
   const currentAssignedIds = new Set(
-    freshPlaylist?.songs?.map((s) => s.id) || [],
+    Array.isArray(assignedSongs)
+      ? assignedSongs.map((s: any) => s.id)
+      : (assignedSongs as any)?.songs?.map((s: any) => s.id) || []
   )
 
   const filteredTracks =

@@ -135,7 +135,6 @@ export class PlaylistService {
         _count: { songs: likedSongsCount }
       };
     }
-    
 
     // Standard database playlist operation
     const playlist = await this.prisma.playlist.findUnique({
@@ -148,9 +147,10 @@ export class PlaylistService {
       throw new ForbiddenException('This playlist is private and you do not have permission to access it.');
     }
 
+    // FIXED: Rewritten to use strictly 'select' strategy to avoid Prisma compilation error
     const playlistWithSongs = await this.prisma.playlist.findUnique({
       where: { id: playlistId },
-      include: {
+      select: {
         songs: {
           skip: skip,
           take: limitNum,
@@ -162,9 +162,7 @@ export class PlaylistService {
             duration: true,
             coverUrl: true,
             mimeType: true,
-          },
-          include: {
-            // Check if the current user liked this song to inject the boolean state
+            // Instead of nested include, we select the relation directly
             likedBy: {
               where: { userId },
               select: { id: true },
@@ -174,7 +172,7 @@ export class PlaylistService {
       },
     });
 
-    if (!playlistWithSongs) return [];
+    if (!playlistWithSongs || !playlistWithSongs.songs) return [];
 
     // Map songs array to extract likedSongs relation into a clean isLiked boolean
     return playlistWithSongs.songs.map(song => {
@@ -185,7 +183,6 @@ export class PlaylistService {
       };
     });
   }
-
   /**
    * Adds a song link to a custom playlist (Owner only)
    */

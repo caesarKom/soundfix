@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useMutation, useQueryClient, useInfiniteQuery, type InfiniteData } from "@tanstack/react-query"
 import { musicApi } from "../api/music-api.ts"
 import { AdminModal } from "../../../components/admin-modal.tsx"
@@ -22,13 +22,15 @@ export function MusicPage() {
     data: dataTracks,
     isLoading,
     isError,
+    fetchNextPage,
+    hasNextPage,
   } = useInfiniteQuery<Track[], Error, InfiniteData<Track[], number>, [string | null], number>({
     queryKey: ["admin-music"],
     queryFn: musicApi.getAll,
     initialPageParam:1,
-    getNextPageParam: (lastPage) => {
+    getNextPageParam: (lastPage, allPages) => {
       if (!lastPage || lastPage.length < 20) return undefined
-      return undefined
+      return allPages.length + 1
     },
     staleTime: 1000 * 60 * 2,
   })
@@ -60,6 +62,13 @@ export function MusicPage() {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   )
+
+  useEffect(() => {
+    const currentMaxItemsNeeded = currentPage * itemsPerPage;
+    if (tracks.length < currentMaxItemsNeeded && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [currentPage, tracks.length, hasNextPage, fetchNextPage])
 
   return (
     <div className="space-y-6">

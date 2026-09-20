@@ -1,9 +1,10 @@
 // apps/admin/src/features/playlists/components/PlaylistTrackManager.tsx
-import { useState } from "react"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useEffect, useMemo, useState } from "react"
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery, type InfiniteData } from "@tanstack/react-query"
 import { musicApi } from "../../music/api/music-api.ts"
 import { playlistsApi } from "../api/playlists-api.ts"
 import type { AdminPlaylist } from "../types/playlists.ts"
+import type { Track } from "@/features/music/types/music.ts"
 
 interface PlaylistTrackManagerProps {
   playlist: AdminPlaylist
@@ -20,10 +21,33 @@ export function PlaylistTrackManager({
   const itemsPerPage = 5 // Compact view for modal scalability
 
   // 1. Fetch all tracks available in the entire system database
-  const { data: allTracks, isLoading } = useQuery({
+    const {
+    data: dataTracks,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+  } = useInfiniteQuery<Track[], Error, InfiniteData<Track[], number>, [string | null], number>({
     queryKey: ["admin-music"],
     queryFn: musicApi.getAll,
+    initialPageParam:1,
+    getNextPageParam: (lastPage, allPages) => {
+      if (!lastPage || lastPage.length < 20) return undefined
+      return allPages.length + 1
+    },
+    staleTime: 1000 * 60 * 5,
   })
+
+  const allTracks = useMemo(() => {
+    if(!dataTracks || !dataTracks.pages) return [];
+    return dataTracks.pages.flatMap((page) => page )
+  }, [dataTracks])
+
+    useEffect(() => {
+      const currentMaxItemsNeeded = currentPage * itemsPerPage;
+      if (allTracks.length < currentMaxItemsNeeded && hasNextPage) {
+        fetchNextPage();
+      }
+    }, [currentPage, allTracks.length, hasNextPage, fetchNextPage])
 
   // 2. FIXED: Fetch fresh paginated songs for this playlist to accurately determine assignment states
   // We set a high limit (e.g., 1000) or use page 1 because this is an admin manager view

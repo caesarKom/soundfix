@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMemo, useState } from "react"
+import { useMutation, useQueryClient, useInfiniteQuery, type InfiniteData } from "@tanstack/react-query"
 import { musicApi } from "../api/music-api.ts"
 import { AdminModal } from "../../../components/admin-modal.tsx"
 import { TrackUploadForm } from "./track-upload-form.tsx"
@@ -19,13 +19,24 @@ export function MusicPage() {
   const [editingTrack, setEditingTrack] = useState<Track | null>(null)
 
   const {
-    data: tracks,
+    data: dataTracks,
     isLoading,
     isError,
-  } = useQuery({
+  } = useInfiniteQuery<Track[], Error, InfiniteData<Track[], number>, [string | null], number>({
     queryKey: ["admin-music"],
     queryFn: musicApi.getAll,
+    initialPageParam:1,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage || lastPage.length < 20) return undefined
+      return undefined
+    },
+    staleTime: 1000 * 60 * 2,
   })
+
+  const tracks = useMemo(() => {
+    if(!dataTracks || !dataTracks.pages) return [];
+    return dataTracks.pages.flatMap((page) => page )
+  }, [dataTracks])
 
   const deleteMutation = useMutation({
     mutationFn: musicApi.delete,

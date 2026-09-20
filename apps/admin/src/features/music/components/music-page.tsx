@@ -32,7 +32,7 @@ export function MusicPage() {
       if (!lastPage || lastPage.length < 20) return undefined
       return allPages.length + 1
     },
-    staleTime: 1000 * 60 * 2,
+    staleTime: 1000 * 60 * 5,
   })
 
   const tracks = useMemo(() => {

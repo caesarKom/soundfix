@@ -5,6 +5,7 @@ import { musicApi } from "../../music/api/music-api.ts"
 import { playlistsApi } from "../api/playlists-api.ts"
 import type { AdminPlaylist } from "../types/playlists.ts"
 import type { Track } from "@/features/music/types/music.ts"
+import { useDebounce } from "use-debounce"
 
 interface PlaylistTrackManagerProps {
   playlist: AdminPlaylist
@@ -17,6 +18,7 @@ export function PlaylistTrackManager({
 }: PlaylistTrackManagerProps) {
   const queryClient = useQueryClient()
   const [searchTerm, setSearchTerm] = useState("")
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 5 // Compact view for modal scalability
 
@@ -27,8 +29,8 @@ export function PlaylistTrackManager({
     fetchNextPage,
     hasNextPage,
   } = useInfiniteQuery<Track[], Error, InfiniteData<Track[], number>, [string, string | null], number>({
-    queryKey: ["admin-music", searchTerm],
-    queryFn: (context) => musicApi.getAll({ pageParam: context.pageParam }),
+    queryKey: ["admin-music", debouncedSearchTerm],
+    queryFn: (context) => musicApi.getAll({ pageParam: context.pageParam, search: debouncedSearchTerm  }),
     initialPageParam:1,
     getNextPageParam: (lastPage, allPages) => {
       if (!lastPage || lastPage.length < 20) return undefined
@@ -93,12 +95,7 @@ export function PlaylistTrackManager({
       : (assignedSongs as any)?.songs?.map((s: any) => s.id) || []
   )
 
-  const filteredTracks =
-    allTracks?.filter(
-      (track) =>
-        track.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        track.artist.toLowerCase().includes(searchTerm.toLowerCase()),
-    ) || []
+  const filteredTracks = allTracks || []
 
   const totalPages = Math.ceil(filteredTracks.length / itemsPerPage)
   const paginatedTracks = filteredTracks.slice(

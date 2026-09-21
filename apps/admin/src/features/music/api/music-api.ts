@@ -3,11 +3,12 @@ import type { Track, CreateTrackDto } from '../types/music.ts';
 
 export const musicApi = {
   // Fetch all music tracks
-  getAll: async ({ pageParam = 1 }): Promise<Track[]> => {
+  getAll: async ({ pageParam = 1, search = "" }): Promise<Track[]> => {
     const { data } = await apiClient.get<Track[]>('/music', {
       params: {
         page: pageParam,
-        limit: 20
+        limit: 20,
+        search: search || undefined
       }
     });
     return data;

@@ -6,12 +6,14 @@ import { TrackUploadForm } from "./track-upload-form.tsx"
 import { TrackEditForm } from "./track-edit-form.tsx"
 import type { Track } from "../types/music.ts"
 import TrackRow from "./media-preview-player.tsx"
+import { useDebounce } from "use-debounce"
 
 export function MusicPage() {
   const queryClient = useQueryClient()
   const [searchTerm, setSearchTerm] = useState("")
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 12 // Defensive pagination value
+  const itemsPerPage = 10 // Defensive pagination value
   const IMAGE_URL = import.meta.env.VITE_BACKEND_URL;
 
   // Modals visibility triggers
@@ -25,8 +27,8 @@ export function MusicPage() {
     fetchNextPage,
     hasNextPage,
   } = useInfiniteQuery<Track[], Error, InfiniteData<Track[], number>, [string, string | null], number>({
-    queryKey: ["admin-music", searchTerm],
-    queryFn: (context) => musicApi.getAll({ pageParam: context.pageParam }),
+    queryKey: ["admin-music", debouncedSearchTerm],
+    queryFn: (context) => musicApi.getAll({ pageParam: context.pageParam, search: debouncedSearchTerm }),
     initialPageParam:1,
     getNextPageParam: (lastPage, allPages) => {
       if (!lastPage || lastPage.length < 20) return undefined
@@ -234,7 +236,7 @@ export function MusicPage() {
                       Previous
                     </button>
                     <button
-                      disabled={currentPage === totalPages}
+                      disabled={currentPage === totalPages && !hasNextPage}
                       onClick={() => setCurrentPage((p) => p + 1)}
                       className="px-3 py-1.5 text-xs font-bold bg-slate-800 hover:bg-slate-700 disabled:opacity-30 rounded-md transition-colors"
                     >

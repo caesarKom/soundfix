@@ -26,9 +26,9 @@ export function PlaylistTrackManager({
     isLoading,
     fetchNextPage,
     hasNextPage,
-  } = useInfiniteQuery<Track[], Error, InfiniteData<Track[], number>, [string | null], number>({
-    queryKey: ["admin-music"],
-    queryFn: musicApi.getAll,
+  } = useInfiniteQuery<Track[], Error, InfiniteData<Track[], number>, [string, string | null], number>({
+    queryKey: ["admin-music", searchTerm],
+    queryFn: (context) => musicApi.getAll({ pageParam: context.pageParam }),
     initialPageParam:1,
     getNextPageParam: (lastPage, allPages) => {
       if (!lastPage || lastPage.length < 20) return undefined

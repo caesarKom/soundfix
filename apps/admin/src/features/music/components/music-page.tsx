@@ -11,7 +11,7 @@ export function MusicPage() {
   const queryClient = useQueryClient()
   const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 10 // Defensive pagination value
+  const itemsPerPage = 12 // Defensive pagination value
   const IMAGE_URL = import.meta.env.VITE_BACKEND_URL;
 
   // Modals visibility triggers
@@ -24,9 +24,9 @@ export function MusicPage() {
     isError,
     fetchNextPage,
     hasNextPage,
-  } = useInfiniteQuery<Track[], Error, InfiniteData<Track[], number>, [string | null], number>({
-    queryKey: ["admin-music"],
-    queryFn: musicApi.getAll,
+  } = useInfiniteQuery<Track[], Error, InfiniteData<Track[], number>, [string, string | null], number>({
+    queryKey: ["admin-music", searchTerm],
+    queryFn: (context) => musicApi.getAll({ pageParam: context.pageParam }),
     initialPageParam:1,
     getNextPageParam: (lastPage, allPages) => {
       if (!lastPage || lastPage.length < 20) return undefined
@@ -47,14 +47,7 @@ export function MusicPage() {
   })
 
   // Client-side instant query filtering
-  const filteredTracks =
-    tracks?.filter(
-      (track) =>
-        track.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        track.artist.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (track.album &&
-          track.album.toLowerCase().includes(searchTerm.toLowerCase())),
-    ) || []
+  const filteredTracks = tracks || []
 
   // Slice list dynamically based on calculation
   const totalPages = Math.ceil(filteredTracks.length / itemsPerPage)

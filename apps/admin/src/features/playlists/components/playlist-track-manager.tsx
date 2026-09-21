@@ -187,7 +187,7 @@ export function PlaylistTrackManager({
               Prev
             </button>
             <button
-              disabled={currentPage === totalPages}
+              disabled={currentPage === totalPages && !hasNextPage}
               onClick={() => setCurrentPage((p) => p + 1)}
               className="px-2 py-1 text-[11px] font-bold bg-slate-800 disabled:opacity-30 rounded"
             >

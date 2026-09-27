@@ -38,27 +38,63 @@ export class MusicService {
     const audioPathName = `uploads/music/${uniqueSuffix}${extname(audioFile.originalname)}`;
     const coverPathName = `uploads/covers/${uniqueSuffix}${extname(coverFile.originalname)}`;
 
-    await fs.writeFile(join(process.cwd(), audioPathName), audioFile.buffer);
-    await fs.writeFile(join(process.cwd(), coverPathName), coverFile.buffer);
+    const fullAudioPath = join(process.cwd(), audioPathName);
+    const fullCoverPath = join(process.cwd(), coverPathName);
 
-    const newSong = await this.prisma.music.create({
-      data: {
-        title: dto.title,
-        artist: dto.artist,
-        album: dto.album || null,
-        isPublic: dto.isPublic || true,
-        duration: dto.duration,
-        audioUrl: audioPathName,
-        coverUrl: coverPathName,
-        userId: userId,
-        mimeType: audioFile.mimetype,
-      },
-    });
+    // Check if the file exists before deleting it
+    try {
+      await fs.access(fullAudioPath);
+      await fs.unlink(fullAudioPath); // Delete if exist
+    } catch {
+      // Ignore
+    }
 
-    return newSong;
+    try {
+      await fs.access(fullCoverPath);
+      await fs.unlink(fullCoverPath);
+    } catch {
+      // Ignore
+    }
+
+    // Save the file to the disk
+    await fs.writeFile(fullAudioPath, audioFile.buffer);
+    await fs.writeFile(fullCoverPath, coverFile.buffer);
+
+    try {
+      const newSong = await this.prisma.music.create({
+        data: {
+          title: dto.title,
+          artist: dto.artist,
+          album: dto.album || null,
+          isPublic: dto.isPublic || true,
+          duration: dto.duration,
+          audioUrl: audioPathName,
+          coverUrl: coverPathName,
+          userId: userId,
+          mimeType: audioFile.mimetype,
+        },
+      });
+
+      return newSong;
+    } catch (err) {
+      try {
+        await fs.unlink(fullAudioPath);
+      } catch {
+        // Ignore
+      }
+      try {
+        await fs.unlink(fullCoverPath);
+      } catch {
+        // Ignore
+      }
+      throw err;
+    }
   }
 
-  async findAll(query: MusicListQueryDto, userId:string): Promise<MusicListResponseDto[]> {
+  async findAll(
+    query: MusicListQueryDto,
+    userId: string,
+  ): Promise<MusicListResponseDto[]> {
     const { page = 1, limit = 20, search } = query;
     const skip = (page - 1) * limit;
     const where: any = {};
@@ -76,7 +112,7 @@ export class MusicService {
       take: limit,
       where: where,
       orderBy: { createdAt: 'desc' },
-      
+
       select: {
         id: true,
         title: true,
@@ -89,16 +125,16 @@ export class MusicService {
         isPublic: true,
         likedBy: {
           where: { userId },
-          select: { id: true }
-        }
+          select: { id: true },
+        },
       },
     });
 
-   // map the result by converting the likedSongs array to a simple boolean isLiked
-   return records.map((record) => {
-    const { likedBy, ...rest } = record;
-    return { ...rest, isLiked: likedBy.length > 0 };
-   })
+    // map the result by converting the likedSongs array to a simple boolean isLiked
+    return records.map((record) => {
+      const { likedBy, ...rest } = record;
+      return { ...rest, isLiked: likedBy.length > 0 };
+    });
   }
 
   async findOne(id: string): Promise<Music> {
@@ -108,54 +144,53 @@ export class MusicService {
   }
 
   async getAudioStream(
-  id: string,
-  range: string | undefined,
-  res: Response,
-): Promise<void> {
-  const song = await this.prisma.music.findUnique({ where: { id } });
-  if (!song) throw new NotFoundException('Song not found');
+    id: string,
+    range: string | undefined,
+    res: Response,
+  ): Promise<void> {
+    const song = await this.prisma.music.findUnique({ where: { id } });
+    if (!song) throw new NotFoundException('Song not found');
 
-  const filePath = join(process.cwd(), song.audioUrl);
-  if (!existsSync(filePath)) {
-    throw new NotFoundException('Audio file not found on server storage');
-  }
+    const filePath = join(process.cwd(), song.audioUrl);
+    if (!existsSync(filePath)) {
+      throw new NotFoundException('Audio file not found on server storage');
+    }
 
-  const stat = statSync(filePath);
-  const fileSize = stat.size;
+    const stat = statSync(filePath);
+    const fileSize = stat.size;
 
- await this.prisma.music.update({
-    where: { id },
-    data: { playCount: { increment: 1 } },
-  });
-
-  if (range) {
-    const [startStr, endStr] = range.replace(/bytes=/, '').split('-');
-    const start = parseInt(startStr, 10);
-    const end = endStr ? parseInt(endStr, 10) : fileSize - 1;
-    const chunkSize = end - start + 1;
-
-   
-    res.writeHead(206,{
-      'Content-Range': `bytes ${start}-${end}/${fileSize}`,
-      'Accept-Ranges': 'bytes',
-      'Content-Length': chunkSize,
-      'Content-Type': song.mimeType, // real mimeType
+    await this.prisma.music.update({
+      where: { id },
+      data: { playCount: { increment: 1 } },
     });
 
-   const stream = createReadStream(filePath, { start, end });
+    if (range) {
+      const [startStr, endStr] = range.replace(/bytes=/, '').split('-');
+      const start = parseInt(startStr, 10);
+      const end = endStr ? parseInt(endStr, 10) : fileSize - 1;
+      const chunkSize = end - start + 1;
+
+      res.writeHead(206, {
+        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+        'Accept-Ranges': 'bytes',
+        'Content-Length': chunkSize,
+        'Content-Type': song.mimeType, // real mimeType
+      });
+
+      const stream = createReadStream(filePath, { start, end });
+      stream.pipe(res);
+      return;
+    }
+
+    res.writeHead(200, {
+      'Content-Length': fileSize,
+      'Content-Type': song.mimeType,
+      'Accept-Ranges': 'bytes',
+    });
+
+    const stream = createReadStream(filePath);
     stream.pipe(res);
-    return;
   }
-
-  res.writeHead(200, {
-    'Content-Length': fileSize,
-    'Content-Type': song.mimeType,
-    'Accept-Ranges': 'bytes',
-  });
-
-  const stream = createReadStream(filePath);
-  stream.pipe(res);
-}
 
   // 📝 Editing song data (Title, artist, album, visibility)
   async update(

@@ -118,7 +118,7 @@ export function Sidebar() {
                     {playlist.name}
                   </p>
                   <p className="text-xs text-spotify-muted truncate">
-                    Playlist
+                    {playlist.description}
                   </p>
                 </div>
               </Link>
@@ -130,9 +130,23 @@ export function Sidebar() {
       {/* Profile and logout */}
       <div className="bg-spotify-base rounded-lg p-4 flex flex-col gap-2 items-center md:items-start mt-auto">
         <div className="flex items-center gap-3 w-full justify-center md:justify-start px-2 py-1">
-          <div className="w-7 h-7 rounded-full bg-spotify-green flex items-center justify-center text-spotify-black font-bold text-xs shrink-0 select-none">
+          {user?.profile.avatar ? (
+           <div className="flex relative size-8 rounded-full items-center justify-center overflow-hidden">
+             <Image
+                    src={ENV.getMediaUrl(user.profile.avatar)}
+                    alt={user.name}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+           </div>
+         
+          ) : (
+            <div className="w-7 h-7 rounded-full bg-spotify-green flex items-center justify-center text-spotify-black font-bold text-xs shrink-0 select-none">
             {user?.name?.charAt(0).toUpperCase() || "U"}
           </div>
+          )}
+          
           <span className="text-sm font-medium text-spotify-white truncate hidden md:inline">
             {user?.name || "User Account"}
           </span>

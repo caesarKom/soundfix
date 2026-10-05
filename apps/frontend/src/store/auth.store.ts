@@ -1,11 +1,19 @@
 import { create } from "zustand"
 import { persist, createJSONStorage } from "zustand/middleware"
 
+interface UserProfile {
+  firstName: string
+  lastName: string
+  avatar: string
+  gender: "MALE" | "FEMALE" | "OTHER"
+}
+
 interface UserPayload {
   id: string
   email: string
   name: string
   role: "ADMIN" | "MEMBER"
+  profile: UserProfile
 }
 
 interface AuthState {

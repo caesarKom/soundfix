@@ -1,9 +1,9 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { musicService, MusicTrack } from "@/services/music.service"
 import { usePlayerStore } from "@/store/player.store"
-import { Play } from "lucide-react"
+import { AlertCircle, Loader2, Play, RefreshCw } from "lucide-react"
 import Image from "next/image"
 import { ENV } from "@/config/env.config"
 import { useAuthStore } from "@/store/auth.store"
@@ -12,12 +12,14 @@ import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query"
 export default function HomePage() {
   const { setTrack, currentTrack, isPlaying, togglePlay } = usePlayerStore()
   const { user } = useAuthStore()
+  // Ref to the invisible Infinite Scroll trigger element
+  const loadMoreRef = useRef<HTMLDivElement>(null)
 
   // Calculate greeting dynamically during render phase to avoid cascading renders
   const hour = new Date().getHours()
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening"
 
-  const { data: musicsData, isLoading, isError, fetchNextPage, hasNextPage } = useInfiniteQuery<MusicTrack[], Error, InfiniteData<MusicTrack[], number>, [string | null], number>({
+  const { data: musicsData, isLoading, isError, fetchNextPage, isFetchingNextPage, hasNextPage, refetch, error } = useInfiniteQuery<MusicTrack[], Error, InfiniteData<MusicTrack[], number>, [string | null], number>({
     queryKey: ["musics"],
     queryFn: (ctx) => musicService.getPublicTracks({ pageParam: ctx.pageParam}),
     initialPageParam: 1,
@@ -30,8 +32,28 @@ export default function HomePage() {
 
   const tracks = useMemo(() => {
     if (!musicsData || !musicsData.pages) return [];
-    return musicsData.pages.flatMap((page) => page)
+    const allFlattened = musicsData.pages.flatMap((page) => page)
+    // Sorting in descending order by play count (playCount ?? 0 guards against undefined)
+    return [...allFlattened].sort((a, b) => (b.playCount ?? 0) - (a.playCount ?? 0));
   }, [musicsData])
+
+  // Effect for automatic Infinite Scroll (Intersection Observer)
+  useEffect(() => {
+    const observerTarget = loadMoreRef.current
+    if (!observerTarget || !hasNextPage) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isFetchingNextPage) {
+          fetchNextPage()
+        }
+      },
+      { threshold: 0.1 } // Trigger as soon as the element appears at the bottom of the screen.
+    )
+
+    observer.observe(observerTarget)
+    return () => observer.disconnect()
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, tracks]) // Reaguje na zmianę długości listy
 
   const handleTrackClick = (track: MusicTrack, index: number) => {
     if (currentTrack()?.id === track.id) {
@@ -52,6 +74,34 @@ export default function HomePage() {
     }
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-spotify-base text-spotify-white gap-4">
+        <Loader2 className="w-10 h-10 animate-spin text-spotify-green" />
+        <p className="text-sm font-medium text-spotify-muted">Loading your music library...</p>
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-spotify-base text-spotify-white p-6 text-center">
+        <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
+        <h2 className="text-xl font-bold mb-2">Something went wrong</h2>
+        <p className="text-sm text-spotify-muted max-w-md mb-6">
+          {error?.message || "Failed to fetch music tracks. Please check your connection or try again."}
+        </p>
+        <button 
+          onClick={() => refetch()}
+          className="flex items-center gap-2 px-6 py-3 rounded-full bg-spotify-white text-spotify-black font-bold text-sm hover:scale-105 transition transform cursor-pointer"
+        >
+          <RefreshCw size={16} />
+          Try Again
+        </button>
+      </div>
+    )
+  }
+
   return (
     <div className="p-6 bg-linear-to-b from-spotify-highlight to-spotify-base min-h-full">
       <h1 className="text-3xl font-bold mb-6 tracking-tight text-spotify-white">
@@ -63,7 +113,7 @@ export default function HomePage() {
           <div
             key={`quick-${track.id}`}
             onClick={() => handleTrackClick(track, index)}
-            className="flex items-center bg-spotify-white/5 hover:bg-spotify-white/10 rounded-md overflow-hidden transition duration-300 cursor-pointer group relative pr-20"
+            className="flex items-center bg-spotify-white/5 hover:bg-spotify-white/10 rounded-md overflow-hidden transition duration-300 cursor-pointer group relative"
           >
             <div className="relative w-20 h-20 shrink-0">
               <Image
@@ -76,16 +126,19 @@ export default function HomePage() {
                 unoptimized
               />
             </div>
-            <div className="p-4 overflow-hidden">
+            <div className="p-4 overflow-hidden flex-1">
               <p className="font-bold text-sm text-spotify-white truncate">
                 {track.title}
               </p>
-              <p className="text-xs text-spotify-muted truncate mt-1">
+              <p className="text-xs text-spotify-muted mt-1">
                 {track.artist}
               </p>
+              <p className="text-xs text-spotify-muted truncate mt-1">
+               played: {track.playCount}
+              </p>
             </div>
-            <button className="absolute right-4 w-12 h-12 rounded-full bg-spotify-green flex items-center justify-center shadow-xl opacity-0 translate-y-3 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 cursor-pointer">
-              {currentTrack()?.id === track.id && isPlaying ? (
+           <div className="absolute inset-0 bg-spotify-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                {currentTrack()?.id === track.id && isPlaying ? (
                 <div className="flex gap-1 items-end justify-center h-4">
                   <div className="w-1 bg-spotify-black h-full animate-pulse" />
                   <div className="w-1 bg-spotify-black h-2 animate-pulse [animation-delay:0.2s]" />
@@ -93,12 +146,12 @@ export default function HomePage() {
                 </div>
               ) : (
                 <Play
-                  size={20}
-                  fill="black"
-                  className="ml-1 text-spotify-black"
-                />
+                    size={24}
+                    fill="#1ed760"
+                    className="text-spotify-green transform scale-90 group-hover:scale-100 transition-transform duration-300"
+                  />
               )}
-            </button>
+            </div>
           </div>
         ))}
       </div>
@@ -144,6 +197,14 @@ export default function HomePage() {
           ))}
         </div>
       </div>
+
+      {/* HIDDEN INFINITE SCROLL: Invisible IntersectionObserver checkpoint with a small spinner in the background */}
+      <div ref={loadMoreRef} className="h-12 flex items-center justify-center w-full mt-4">
+        {isFetchingNextPage && (
+          <Loader2 className="w-6 h-6 animate-spin text-spotify-green opacity-60" />
+        )}
+      </div>
+
     </div>
   )
 }

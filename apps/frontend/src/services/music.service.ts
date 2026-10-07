@@ -30,9 +30,15 @@ export interface SearchResponse {
 }
 
 export const musicService = {
-  async getPublicTracks(): Promise<MusicTrack[]> {
-    const response = await api.get<MusicTrack[]>("/music")
-    return response.data
+  async getPublicTracks({ pageParam = 1, search = "" }): Promise<MusicTrack[]> {
+    const { data } = await api.get<MusicTrack[]>("/music", {
+      params: {
+        page: pageParam,
+        limit: 20,
+        search: search || undefined
+      }
+    });
+    return data;
   },
 
   async getUserPlaylists(): Promise<PlaylistData[]> {

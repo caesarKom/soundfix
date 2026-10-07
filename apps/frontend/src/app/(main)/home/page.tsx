@@ -1,29 +1,37 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { musicService, MusicTrack } from "@/services/music.service"
 import { usePlayerStore } from "@/store/player.store"
 import { Play } from "lucide-react"
 import Image from "next/image"
 import { ENV } from "@/config/env.config"
 import { useAuthStore } from "@/store/auth.store"
+import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query"
 
 export default function HomePage() {
-  const [tracks, setTracks] = useState<MusicTrack[]>([])
   const { setTrack, currentTrack, isPlaying, togglePlay } = usePlayerStore()
   const { user } = useAuthStore()
 
   // Calculate greeting dynamically during render phase to avoid cascading renders
   const hour = new Date().getHours()
-  const greeting =
-    hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening"
+  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening"
 
-  useEffect(() => {
-    musicService
-      .getPublicTracks()
-      .then(setTracks)
-      .catch((err) => console.error("Failed to load tracks", err))
-  }, [])
+  const { data: musicsData, isLoading, isError, fetchNextPage, hasNextPage } = useInfiniteQuery<MusicTrack[], Error, InfiniteData<MusicTrack[], number>, [string | null], number>({
+    queryKey: ["musics"],
+    queryFn: (ctx) => musicService.getPublicTracks({ pageParam: ctx.pageParam}),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      if (!lastPage || lastPage.length < 20) return undefined;
+      return allPages.length + 1;
+    },
+    staleTime: 1000 * 60 * 5,
+  })
+
+  const tracks = useMemo(() => {
+    if (!musicsData || !musicsData.pages) return [];
+    return musicsData.pages.flatMap((page) => page)
+  }, [musicsData])
 
   const handleTrackClick = (track: MusicTrack, index: number) => {
     if (currentTrack()?.id === track.id) {

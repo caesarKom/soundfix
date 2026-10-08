@@ -40,20 +40,20 @@ export default function HomePage() {
   // Effect for automatic Infinite Scroll (Intersection Observer)
   useEffect(() => {
     const observerTarget = loadMoreRef.current
-    if (!observerTarget || !hasNextPage) return
+    if (!observerTarget || !hasNextPage || isFetchingNextPage) return
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && !isFetchingNextPage) {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
           fetchNextPage()
         }
       },
-      { threshold: 0.1 } // Trigger as soon as the element appears at the bottom of the screen.
+      { threshold: 0.1, rootMargin: '200px' } // Trigger as soon as the element appears at the bottom of the screen.
     )
 
     observer.observe(observerTarget)
     return () => observer.disconnect()
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage, tracks]) // Reaguje na zmianę długości listy
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
   const handleTrackClick = (track: MusicTrack, index: number) => {
     if (currentTrack()?.id === track.id) {
@@ -198,12 +198,12 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* HIDDEN INFINITE SCROLL: Invisible IntersectionObserver checkpoint with a small spinner in the background */}
-      <div ref={loadMoreRef} className="h-12 flex items-center justify-center w-full mt-4">
-        {isFetchingNextPage && (
-          <Loader2 className="w-6 h-6 animate-spin text-spotify-green opacity-60" />
-        )}
-      </div>
+      {/* HIDDEN checkpoint with forced altitude locking */}
+<div ref={loadMoreRef} className="w-full h-20 flex items-center justify-center content-none select-none pointer-events-none">
+  {isFetchingNextPage && (
+    <Loader2 className="w-6 h-6 animate-spin text-spotify-green" />
+  )}
+</div>
 
     </div>
   )

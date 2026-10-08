@@ -111,7 +111,10 @@ export class MusicService {
       skip: skip,
       take: limit,
       where: where,
-      orderBy: { createdAt: 'desc' },
+      orderBy: [
+      { playCount: 'desc' },
+      { createdAt: 'desc' }
+    ],
 
       select: {
         id: true,

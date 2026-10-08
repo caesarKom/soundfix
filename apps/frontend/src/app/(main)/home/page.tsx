@@ -103,7 +103,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="p-6 bg-linear-to-b from-spotify-highlight to-spotify-base min-h-full">
+    <div className="p-6 bg-linear-to-b from-spotify-highlight to-spotify-base min-h-full overflow-y-auto">
       <h1 className="text-3xl font-bold mb-6 tracking-tight text-spotify-white">
         {greeting} {user?.name}{" "}
       </h1>

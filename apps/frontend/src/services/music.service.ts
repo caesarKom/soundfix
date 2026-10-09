@@ -22,6 +22,13 @@ export interface PlaylistData {
   isPrivate: boolean
   userId: string
   songs?: MusicTrack[]
+  owner?: {
+    id: string;
+    name: string;
+  }
+  _count?: {
+    songs: number;
+  };
 }
 
 export interface SearchResponse {
@@ -30,13 +37,13 @@ export interface SearchResponse {
 }
 
 export const musicService = {
-  async getPublicTracks({ pageParam = 1, search = "" }): Promise<MusicTrack[]> {
+  async getPublicTracks(params: { page?: number; limit?: number; search?: string }): Promise<MusicTrack[]> {
     const { data } = await api.get<MusicTrack[]>("/music", {
       params: {
-        page: pageParam,
-        limit: 20,
-        search: search || undefined
-      }
+      page: params.page ?? 1,
+      limit: params.limit ?? 20,
+      search: params.search,
+    },
     });
     return data;
   },
@@ -50,6 +57,16 @@ export const musicService = {
     const response = await api.get<PlaylistData>(`/playlists/${id}`)
     return response.data
   },
+
+  async getPlaylistSongs(playlistId: string, params?: { page?: number; limit?: number }) {
+  const { data } = await api.get(`/playlist/${playlistId}/songs`, {
+    params: {
+      page: params?.page ?? 1,
+      limit: params?.limit ?? 100,
+    },
+  });
+  return data;
+},
 
   async searchTracks(query: string): Promise<SearchResponse> {
     const response = await api.get<SearchResponse>(
@@ -68,14 +85,14 @@ export const musicService = {
     return response.data
   },
 
-  async createPlaylist(data: {
-    name: string
-    description?: string
-    isPrivate?: boolean
-  }): Promise<PlaylistData> {
-    const response = await api.post<PlaylistData>("/playlists", data)
-    return response.data
-  },
+  async createPlaylist(formData: FormData) {
+  const { data } = await api.post('/playlist', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return data;
+},
 
   async addSongToPlaylist(playlistId: string, musicId: string): Promise<void> {
     await api.post(`/playlists/${playlistId}/songs`, { songId: musicId })
@@ -87,4 +104,19 @@ export const musicService = {
   ): Promise<void> {
     await api.delete(`/playlists/${playlistId}/songs`, { data: { songId: musicId } })
   },
+
+  async updatePlaylist(id: string, formData: FormData) {
+  const { data } = await api.put(`/playlist/${id}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return data;
+},
+
+async deletePlaylist(id: string) {
+  const { data } = await api.delete(`/playlist/${id}`);
+  return data;
+},
+
 }

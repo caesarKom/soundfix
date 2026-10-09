@@ -21,7 +21,7 @@ export default function HomePage() {
 
   const { data: musicsData, isLoading, isError, fetchNextPage, isFetchingNextPage, hasNextPage, refetch, error } = useInfiniteQuery<MusicTrack[], Error, InfiniteData<MusicTrack[], number>, [string | null], number>({
     queryKey: ["musics"],
-    queryFn: (ctx) => musicService.getPublicTracks({ pageParam: ctx.pageParam}),
+    queryFn: () => musicService.getPublicTracks({ page: 1, limit: 20 }),
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => {
       if (!lastPage || lastPage.length < 20) return undefined;

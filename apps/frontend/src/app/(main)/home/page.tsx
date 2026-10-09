@@ -21,7 +21,7 @@ export default function HomePage() {
 
   const { data: musicsData, isLoading, isError, fetchNextPage, isFetchingNextPage, hasNextPage, refetch, error } = useInfiniteQuery<MusicTrack[], Error, InfiniteData<MusicTrack[], number>, [string | null], number>({
     queryKey: ["musics"],
-    queryFn: () => musicService.getPublicTracks({ page: 1, limit: 20 }),
+    queryFn: (ctx) => musicService.getPublicTracks({ page: ctx.pageParam, limit: 20 }),
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => {
       if (!lastPage || lastPage.length < 20) return undefined;
@@ -31,11 +31,19 @@ export default function HomePage() {
   })
 
   const tracks = useMemo(() => {
-    if (!musicsData || !musicsData.pages) return [];
-    const allFlattened = musicsData.pages.flatMap((page) => page)
-    // Sorting in descending order by play count (playCount ?? 0 guards against undefined)
-    return [...allFlattened].sort((a, b) => (b.playCount ?? 0) - (a.playCount ?? 0));
-  }, [musicsData])
+  if (!musicsData || !musicsData.pages) return [];
+  
+  // 1. flatten all the fetched pages into a single array.
+  const allFlattened = musicsData.pages.flatMap((page) => page);
+  
+  // 2. Safeguard: Remove duplicate objects with the same ID if the backend has sent them again.
+  const uniqueTracks = allFlattened.filter(
+    (track, index, self) => self.findIndex((t) => t.id === track.id) === index
+  );
+  
+  // 3. Global sorting by popularity on a unique set
+  return [...uniqueTracks].sort((a, b) => (b.playCount ?? 0) - (a.playCount ?? 0));
+}, [musicsData])
 
   // Effect for automatic Infinite Scroll (Intersection Observer)
   useEffect(() => {
@@ -44,11 +52,11 @@ export default function HomePage() {
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+        if (entries[0].isIntersecting && !isFetchingNextPage) {
           fetchNextPage()
         }
       },
-      { threshold: 0.1, rootMargin: '200px' } // Trigger as soon as the element appears at the bottom of the screen.
+      { threshold: 0.1, rootMargin: '150px' } // Trigger as soon as the element appears at the bottom of the screen.
     )
 
     observer.observe(observerTarget)
@@ -122,6 +130,7 @@ export default function HomePage() {
                 fill
                 sizes="80px"
                 className="object-cover"
+                priority={index < 6}
                 loading="eager"
                 unoptimized
               />
@@ -163,7 +172,7 @@ export default function HomePage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
           {tracks.map((track, index) => (
             <div
-              key={track.id}
+              key={`recommended-${track.id}-${index}`}
               onClick={() => handleTrackClick(track, index)}
               className="bg-spotify-highlight/40 hover:bg-spotify-highlight p-4 rounded-md transition duration-300 cursor-pointer group relative"
             >

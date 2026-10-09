@@ -111,7 +111,7 @@ export default function HomePage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         {tracks.slice(0, 6).map((track, index) => (
           <div
-            key={`quick-${track.id}`}
+            key={`quick-${track.id}-${index}`}
             onClick={() => handleTrackClick(track, index)}
             className="flex items-center bg-spotify-white/5 hover:bg-spotify-white/10 rounded-md overflow-hidden transition duration-300 cursor-pointer group relative"
           >

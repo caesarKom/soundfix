@@ -132,16 +132,16 @@ export function Sidebar() {
     <>
       {editingPlaylist ? (
         <button 
-          onClick={() => confirm("Usuń tę playlistę?") && deletePlaylistMutation.mutate(editingPlaylist.id)}
+          onClick={() => confirm("Delete playlist?") && deletePlaylistMutation.mutate(editingPlaylist.id)}
           className="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-500 underline cursor-pointer bg-transparent border-none"
         >
-          <Trash2 size={14} /> Usuń playlistę
+          <Trash2 size={14} /> Delete playlist
         </button>
       ) : <div />}
       <div className="flex gap-3">
-        <button onClick={() => setIsModalOpen(false)} className="px-5 py-2 text-sm font-bold hover:underline cursor-pointer">Anuluj</button>
+        <button onClick={() => setIsModalOpen(false)} className="px-5 py-2 text-sm font-bold hover:underline cursor-pointer">Cancel</button>
         <button onClick={() => savePlaylistMutation.mutate()} disabled={savePlaylistMutation.isPending} className="px-6 py-2 text-sm font-bold bg-spotify-green text-spotify-black rounded-full hover:scale-105 transition disabled:opacity-50 cursor-pointer">
-          {savePlaylistMutation.isPending ? "Zapisywanie..." : "Zapisz zmiany"}
+          {savePlaylistMutation.isPending ? "Saving..." : "Save"}
         </button>
       </div>
     </>
@@ -266,12 +266,12 @@ export function Sidebar() {
       <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        title={editingPlaylist ? `Zarządzaj: ${editingPlaylist.name}` : "Stwórz nową playlistę"}
+        title={editingPlaylist ? `Menage Playlist: ${editingPlaylist.name}` : "Create new Playlist"}
         footerActions={modalFooter}
       >
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row gap-6">
-            {/* Zmiana okładki */}
+            {/* Change cover */}
             <div 
               onClick={() => fileInputRef.current?.click()} 
               className="relative w-40 h-40 bg-spotify-base border border-spotify-white/10 rounded-lg flex flex-col items-center justify-center cursor-pointer overflow-hidden group shrink-0"
@@ -288,7 +288,7 @@ export function Sidebar() {
                 <Upload size={32} className="text-spotify-muted group-hover:text-spotify-white transition" />
               )}
               <div className="absolute inset-0 bg-spotify-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[11px] font-bold">
-                Zmień okładkę
+                Change cover
               </div>
               <input 
                 type="file" 
@@ -299,10 +299,10 @@ export function Sidebar() {
               />
             </div>
 
-            {/* Dane tekstowe */}
+            {/* data text */}
             <div className="flex-1 space-y-3">
               <div>
-                <label className="text-xs font-bold text-spotify-muted block mb-1">Nazwa playlisty</label>
+                <label className="text-xs font-bold text-spotify-muted block mb-1">Playlist name</label>
                 <input 
                   type="text" 
                   value={name} 
@@ -311,7 +311,7 @@ export function Sidebar() {
                 />
               </div>
               <div>
-                <label className="text-xs font-bold text-spotify-muted block mb-1">Opis (opcjonalnie)</label>
+                <label className="text-xs font-bold text-spotify-muted block mb-1">Description (opcional)</label>
                 <textarea 
                   value={description} 
                   onChange={(e) => setDescription(e.target.value)} 
@@ -328,7 +328,7 @@ export function Sidebar() {
                   className="accent-spotify-green size-4" 
                 />
                 <label htmlFor="privacy-check" className="text-sm font-medium text-spotify-muted hover:text-spotify-white cursor-pointer select-none">
-                  Ustaw jako prywatną
+                  Set is private
                 </label>
               </div>
             </div>

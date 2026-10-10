@@ -48,7 +48,7 @@ export default function HomePage() {
   // Effect for automatic Infinite Scroll (Intersection Observer)
   useEffect(() => {
     const observerTarget = loadMoreRef.current
-    if (!observerTarget || !hasNextPage || isFetchingNextPage) return
+    if (!observerTarget || !hasNextPage || isFetchingNextPage || !tracks || tracks.length === 0) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -56,12 +56,13 @@ export default function HomePage() {
           fetchNextPage()
         }
       },
-      { threshold: 0.1, rootMargin: '150px' } // Trigger as soon as the element appears at the bottom of the screen.
+      { threshold: 0.1, rootMargin: '100px' } // Trigger as soon as the element appears at the bottom of the screen.
     )
 
     observer.observe(observerTarget)
     return () => observer.disconnect()
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, tracks?.length])
 
   const handleTrackClick = (track: MusicTrack, index: number) => {
     if (currentTrack()?.id === track.id) {
@@ -169,7 +170,7 @@ export default function HomePage() {
         <h2 className="text-2xl font-bold mb-4 text-spotify-white hover:underline cursor-pointer inline-block">
           Recommended for you
         </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 min-h-[60vh]">
           {tracks.map((track, index) => (
             <div
               key={`recommended-${track.id}-${index}`}

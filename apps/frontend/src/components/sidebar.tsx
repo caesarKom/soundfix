@@ -55,6 +55,7 @@ export function Sidebar() {
     () => playlists.filter((p: any) => p.userId === user?.id),
     [playlists, user],
   )
+
   const publicPlaylists = useMemo(
     () => playlists.filter((p: any) => !p.isPrivate && p.userId !== user?.id),
     [playlists, user],

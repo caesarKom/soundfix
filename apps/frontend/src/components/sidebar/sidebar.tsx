@@ -4,7 +4,6 @@ import Link from "next/link"
 import Image from "next/image"
 import {
   Library,
-  LogOut,
   Plus,
   FolderHeart,
   Play,
@@ -15,20 +14,16 @@ import {
 } from "lucide-react"
 import { musicService } from "@/services/music.service"
 import { ENV } from "@/config/env.config"
-import { useRouter } from "next/navigation"
-import { useAuthStore } from "@/store/auth.store"
-import { authService } from "@/services/auth.service"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Modal } from "../modal"
 import { usePlayerStore } from "@/store/player.store"
 import { useMemo, useRef, useState } from "react"
 import { useAuth } from "@/hooks/useAuth"
 import SidebarHeaderMenu from "./sidebar-header-menu"
+import SidebarFooter from "./sidebar-footer"
 
 export function Sidebar() {
   const queryClient = useQueryClient()
-  const router = useRouter()
-  const { clearAuth } = useAuthStore()
   const { user } = useAuth()
   const { setTrack } = usePlayerStore()
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -162,17 +157,6 @@ export function Sidebar() {
       console.error(err)
     }
   }
-
-  const handleLogoutClick = async () => {
-    try {
-      await authService.logout()
-    } catch {
-    } finally {
-      clearAuth()
-      router.push("/login")
-    }
-  }
-
 
   const modalFooter = (
     <>
@@ -329,36 +313,7 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Footer profile */}
-      <div className="bg-spotify-base rounded-lg p-4 flex flex-col gap-2 items-center md:items-start mt-auto">
-        <div className="flex items-center gap-3 w-full justify-center md:justify-start px-2 py-1">
-          {user?.profile.avatar ? (
-            <div className="flex relative size-8 rounded-full items-center justify-center overflow-hidden">
-              <Image
-                src={ENV.getMediaUrl(user.profile.avatar)}
-                alt={user.name}
-                fill
-                className="object-cover"
-                unoptimized
-              />
-            </div>
-          ) : (
-            <div className="w-7 h-7 rounded-full bg-spotify-green flex items-center justify-center text-spotify-black font-bold text-xs shrink-0 select-none">
-              {user?.name?.charAt(0).toUpperCase() || "U"}
-            </div>
-          )}
-          <span className="text-sm font-medium text-spotify-white truncate hidden md:inline">
-            {user?.name || "Account"}
-          </span>
-        </div>
-        <button
-          onClick={handleLogoutClick}
-          className="flex items-center gap-5 text-sm font-bold text-spotify-muted hover:text-red-500 transition w-full justify-center md:justify-start p-2 rounded hover:bg-spotify-highlight cursor-pointer"
-        >
-          <LogOut size={20} />
-          <span className="hidden md:inline">Log Out</span>
-        </button>
-      </div>
+     <SidebarFooter user={user} />
 
       {/* PLAYLISTS FORM */}
       <Modal

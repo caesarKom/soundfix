@@ -1,8 +1,16 @@
+interface UserProfile {
+  firstName: string
+  lastName: string
+  avatar: string
+  gender: "MALE" | "FEMALE" | "OTHER"
+}
+
 export interface UserPayload {
-  id: string;
-  email: string;
-  name: string;
-  role: "ADMIN" | "MEMBER";
+  id: string
+  email: string
+  name: string
+  role: "ADMIN" | "MEMBER"
+  profile: UserProfile
 }
 
 export interface AuthResponse {

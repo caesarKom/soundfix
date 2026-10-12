@@ -1,12 +1,10 @@
 "use client"
 
-import Link from "next/link"
 import Image from "next/image"
 import {
   Library,
   Plus,
   FolderHeart,
-  Play,
   Globe2,
   Music,
   Upload,
@@ -21,6 +19,7 @@ import { useMemo, useRef, useState } from "react"
 import { useAuth } from "@/hooks/useAuth"
 import SidebarHeaderMenu from "./sidebar-header-menu"
 import SidebarFooter from "./sidebar-footer"
+import SidebarRenderPlaylists from "./sidebar-render-playlist"
 
 export function Sidebar() {
   const queryClient = useQueryClient()
@@ -34,7 +33,6 @@ export function Sidebar() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-
 
   const { data: playlists = [] } = useQuery({
     queryKey: ["userPlaylists"],
@@ -194,7 +192,6 @@ export function Sidebar() {
   return (
     <div className="flex flex-col gap-2 h-full select-none text-spotify-white">
       <SidebarHeaderMenu />
-      
 
       {/* Library */}
       <div className="flex-1 bg-spotify-base rounded-lg p-5 flex flex-col overflow-hidden items-center md:items-start">
@@ -220,46 +217,13 @@ export function Sidebar() {
             </div>
             <div className="space-y-1">
               {myPlaylists.map((p) => (
-                <Link
+                <SidebarRenderPlaylists
                   key={p.id}
-                  href={`/playlist/${p.id}`}
-                  className="flex items-center gap-3 p-2 rounded-md hover:bg-spotify-highlight transition group justify-center md:justify-start relative"
-                >
-                  <div className="relative w-12 h-12 rounded overflow-hidden shrink-0 bg-spotify-highlight">
-                    <Image
-                      src={ENV.getMediaUrl(p.coverUrl)}
-                      alt=""
-                      fill
-                      sizes="48px"
-                      className="object-cover"
-                      unoptimized
-                    />
-                    <div className="absolute inset-0 bg-spotify-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={(e) => playWholePlaylist(p.id, e)}
-                        className="p-1.5 bg-spotify-green rounded-full text-spotify-black transform scale-90 hover:scale-100 transition"
-                      >
-                        <Play size={14} fill="black" />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="overflow-hidden hidden md:block flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-medium text-spotify-white truncate group-hover:text-spotify-green transition">
-                        {p.name}
-                      </p>
-                      <button
-                        onClick={(e) => openEditModal(p, e)}
-                        className="text-xs text-spotify-muted hover:text-spotify-white opacity-0 group-hover:opacity-100 transition"
-                      >
-                        Edit
-                      </button>
-                    </div>
-                    <p className="text-xs text-spotify-muted truncate mt-0.5">
-                      Playlist • {p._count?.songs ?? 0} tracks
-                    </p>
-                  </div>
-                </Link>
+                  p={p}
+                  type="OWNER"
+                  playPlaylist={playWholePlaylist}
+                  openEditModal={openEditModal}
+                />
               ))}
             </div>
           </div>
@@ -273,39 +237,12 @@ export function Sidebar() {
               </div>
               <div className="space-y-1">
                 {publicPlaylists.map((p) => (
-                  <Link
+                  <SidebarRenderPlaylists
                     key={p.id}
-                    href={`/playlist/${p.id}`}
-                    className="flex items-center gap-3 p-2 rounded-md hover:bg-spotify-highlight transition group justify-center md:justify-start"
-                  >
-                    <div className="relative w-12 h-12 rounded overflow-hidden shrink-0 bg-spotify-highlight">
-                      <Image
-                        src={ENV.getMediaUrl(p.coverUrl)}
-                        alt=""
-                        fill
-                        sizes="48px"
-                        className="object-cover"
-                        unoptimized
-                      />
-                      <div className="absolute inset-0 bg-spotify-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={(e) => playWholePlaylist(p.id, e)}
-                          className="p-1.5 bg-spotify-green rounded-full text-spotify-black cursor-pointer"
-                        >
-                          <Play size={14} fill="black" />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="overflow-hidden hidden md:block">
-                      <p className="text-sm font-medium text-spotify-white truncate">
-                        {p.name}
-                      </p>
-                      <p className="text-xs text-spotify-muted truncate">
-                        By {p.owner?.name || "User"} • {p._count?.songs ?? 0}{" "}
-                        tracks
-                      </p>
-                    </div>
-                  </Link>
+                    p={p}
+                    type="PUBLIC"
+                    playPlaylist={playWholePlaylist}
+                  />
                 ))}
               </div>
             </div>
@@ -313,7 +250,7 @@ export function Sidebar() {
         </div>
       </div>
 
-     <SidebarFooter user={user} />
+      <SidebarFooter user={user} />
 
       {/* PLAYLISTS FORM */}
       <Modal

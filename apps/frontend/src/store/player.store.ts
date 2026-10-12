@@ -9,6 +9,7 @@ export interface Track {
   coverUrl: string;
   audioUrl: string;
   mimeType: string;
+  isLiked: boolean;
 }
 
 interface PlayerState {

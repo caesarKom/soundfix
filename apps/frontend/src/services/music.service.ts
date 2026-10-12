@@ -12,6 +12,7 @@ export interface MusicTrack {
   isPublic: boolean
   userId: string
   mimeType: string
+  isLiked: boolean
 }
 
 export interface PlaylistData {

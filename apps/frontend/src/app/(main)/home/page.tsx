@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef } from "react"
 import { musicService, MusicTrack } from "@/services/music.service"
 import { usePlayerStore } from "@/store/player.store"
-import { AlertCircle, Loader2, Play, RefreshCw } from "lucide-react"
+import { AlertCircle, CheckCheckIcon, CheckIcon, Heart, HeartPulse, Loader2, Play, RefreshCw } from "lucide-react"
 import Image from "next/image"
 import { ENV } from "@/config/env.config"
 import { useAuthStore } from "@/store/auth.store"
@@ -77,6 +77,7 @@ export default function HomePage() {
         coverUrl: t.coverUrl,
         audioUrl: t.audioUrl,
         mimeType: t.mimeType,
+        isLiked: t.isLiked
       }))
 
       setTrack(formattedQueue[index], formattedQueue, index)
@@ -196,9 +197,16 @@ export default function HomePage() {
                 </button>
               </div>
               <div className="min-h-15.5">
-                <h3 className="font-bold text-sm text-spotify-white truncate mb-1">
-                  {track.title}
+                <div className="flex flex-row items-center">
+                  <button>
+                    {track.isLiked && (
+                  <CheckIcon size={20} className="text-green-600 mr-1 font-bold" />
+                )}
+                  </button>
+                  <h3 className="font-bold text-sm text-spotify-white truncate mb-1">
+                   {track.title}
                 </h3>
+                </div>
                 <p className="text-xs text-spotify-muted line-clamp-2">
                   {track.artist}
                 </p>

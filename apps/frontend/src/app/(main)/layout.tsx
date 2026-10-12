@@ -3,7 +3,7 @@
 import { MediaEngine } from "@/components/media-engine";
 import { NowPlayingView } from "@/components/now-playing-view";
 import { PlayerBar } from "@/components/player-bar";
-import { Sidebar } from "@/components/sidebar";
+import { Sidebar } from "@/components/sidebar/sidebar";
 import type { ReactNode } from "react";
 
 

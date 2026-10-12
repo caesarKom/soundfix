@@ -3,8 +3,6 @@
 import Link from "next/link"
 import Image from "next/image"
 import {
-  Home,
-  Search,
   Library,
   LogOut,
   Plus,
@@ -21,10 +19,11 @@ import { useRouter } from "next/navigation"
 import { useAuthStore } from "@/store/auth.store"
 import { authService } from "@/services/auth.service"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { Modal } from "./modal"
+import { Modal } from "../modal"
 import { usePlayerStore } from "@/store/player.store"
 import { useMemo, useRef, useState } from "react"
 import { useAuth } from "@/hooks/useAuth"
+import SidebarHeaderMenu from "./sidebar-header-menu"
 
 export function Sidebar() {
   const queryClient = useQueryClient()
@@ -210,23 +209,8 @@ export function Sidebar() {
 
   return (
     <div className="flex flex-col gap-2 h-full select-none text-spotify-white">
-      {/* Main */}
-      <div className="bg-spotify-base rounded-lg p-5 space-y-4 flex flex-col items-center md:items-start">
-        <Link
-          href="/home"
-          className="flex items-center gap-5 text-sm font-bold text-spotify-muted hover:text-spotify-white transition w-full justify-center md:justify-start"
-        >
-          <Home size={24} />
-          <span className="hidden md:inline">Home</span>
-        </Link>
-        <Link
-          href="/search"
-          className="flex items-center gap-5 text-sm font-bold text-spotify-muted hover:text-spotify-white transition w-full justify-center md:justify-start"
-        >
-          <Search size={24} />
-          <span className="hidden md:inline">Search</span>
-        </Link>
-      </div>
+      <SidebarHeaderMenu />
+      
 
       {/* Library */}
       <div className="flex-1 bg-spotify-base rounded-lg p-5 flex flex-col overflow-hidden items-center md:items-start">

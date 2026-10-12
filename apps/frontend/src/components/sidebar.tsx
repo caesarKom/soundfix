@@ -24,13 +24,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Modal } from "./modal"
 import { usePlayerStore } from "@/store/player.store"
 import { useMemo, useRef, useState } from "react"
+import { useAuth } from "@/hooks/useAuth"
 
 export function Sidebar() {
   const queryClient = useQueryClient()
   const router = useRouter()
-  const { clearAuth, user } = useAuthStore()
+  const { clearAuth } = useAuthStore()
+  const { user } = useAuth()
   const { setTrack } = usePlayerStore()
-
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingPlaylist, setEditingPlaylist] = useState<any | null>(null)
   const [name, setName] = useState("")
@@ -39,6 +40,7 @@ export function Sidebar() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
 
   const { data: playlists = [] } = useQuery({
     queryKey: ["userPlaylists"],
@@ -171,6 +173,7 @@ export function Sidebar() {
       router.push("/login")
     }
   }
+
 
   const modalFooter = (
     <>

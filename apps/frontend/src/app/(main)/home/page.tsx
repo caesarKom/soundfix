@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef } from "react"
 import { musicService, MusicTrack } from "@/services/music.service"
 import { usePlayerStore } from "@/store/player.store"
-import { AlertCircle, CheckCheckIcon, CheckIcon, Heart, HeartPulse, Loader2, Play, RefreshCw } from "lucide-react"
+import { AlertCircle, CheckIcon, Loader2, Play, RefreshCw } from "lucide-react"
 import Image from "next/image"
 import { ENV } from "@/config/env.config"
 import { useAuthStore } from "@/store/auth.store"

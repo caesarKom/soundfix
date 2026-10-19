@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation"
 const Header = () => {
     const router = useRouter()
   return (
-    <div className="h-fit bg-linear-to-b from-emerald-800 p-6">
+    <div className="">
         <div className="w-full mb-4 flex items-center justify-between">
         <div className="hidden md:flex gap-x-2 items-center">
           <button

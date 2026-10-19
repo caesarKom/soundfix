@@ -8,6 +8,7 @@ import Image from "next/image"
 import { ENV } from "@/config/env.config"
 import { useAuthStore } from "@/store/auth.store"
 import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query"
+import Header from "@/components/header/header"
 
 export default function HomePage() {
   const { setTrack, currentTrack, isPlaying, togglePlay } = usePlayerStore()
@@ -113,7 +114,8 @@ export default function HomePage() {
   }
 
   return (
-    <div className="p-6 bg-linear-to-b from-spotify-highlight to-spotify-base min-h-full overflow-y-auto">
+    <div className="bg-linear-to-b from-emerald-900 p-6 min-h-full overflow-y-auto">
+      <Header />
       <h1 className="text-3xl font-bold mb-6 tracking-tight text-spotify-white">
         {greeting} {user?.name}{" "}
       </h1>

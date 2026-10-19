@@ -1,6 +1,5 @@
 "use client";
 
-import Header from "@/components/header/header";
 import { MediaEngine } from "@/components/media-engine";
 import { NowPlayingView } from "@/components/now-playing-view";
 import { PlayerBar } from "@/components/player-bar";
@@ -23,7 +22,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
         <Sidebar />
       </aside>
       <main className="flex-1 bg-spotify-base rounded-lg overflow-y-auto relative custom-scrollbar">
-        <Header />
         {children}
       </main>
 

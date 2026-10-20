@@ -1,20 +1,20 @@
 import { ENV } from "@/config/env.config"
 import { authService } from "@/services/auth.service"
+import { useAuthStore } from "@/store/auth.store"
 import { UserPayload } from "@/types/auth.types"
 import { LogOut } from "lucide-react"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
 
-function SidebarFooter({ user }: { user: UserPayload | null}) {
-  const router = useRouter()
+function SidebarFooter({ user }: { user: UserPayload | null }) {
+  const { clearAuth } = useAuthStore()
 
   const handleLogoutClick = async () => {
     try {
+      clearAuth()
       await authService.logout()
-    } catch {
-    } finally {
-      router.push("/login")
-    }
+    } catch (error) {
+    console.error("Network error while logging out:", error)
+  }
   }
 
   return (

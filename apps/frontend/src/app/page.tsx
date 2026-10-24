@@ -5,6 +5,19 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth.store";
 import { ArrowRight, Download, Music, Shield, Smartphone, Zap } from "lucide-react";
 
+const HandleDownloadAndroid = () => {
+    return (
+      <a 
+            href="/downloads/soundfix.apk"
+            download="soundfix.apk"
+            className="flex items-center gap-2 w-full sm:w-auto justify-center bg-spotify-highlight border border-spotify-press text-spotify-white font-semibold px-8 py-4 rounded-full hover:bg-spotify-press hover:border-spotify-muted/30 transition cursor-pointer text-base backdrop-blur-md"
+          >
+            <Download size={18} className="text-spotify-green" />
+            Download for Android (.APK)
+          </a>
+    )
+  };
+
 export default function RootPage() {
   const router = useRouter();
   const { user } = useAuthStore();
@@ -25,10 +38,6 @@ export default function RootPage() {
       </div>
     );
   }
-
-  const handleDownloadAndroid = () => {
-    window.location.href = "/downloads/soundfix.apk";
-  };
 
   return (
     <div className="relative min-h-screen overflow-x-hidden font-sans bg-spotify-black text-spotify-white select-none">
@@ -92,13 +101,7 @@ export default function RootPage() {
             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
           </button>
           
-          <button 
-            onClick={handleDownloadAndroid}
-            className="flex items-center gap-2 w-full sm:w-auto justify-center bg-spotify-highlight border border-spotify-press text-spotify-white font-semibold px-8 py-4 rounded-full hover:bg-spotify-press hover:border-spotify-muted/30 transition cursor-pointer text-base backdrop-blur-md"
-          >
-            <Download size={18} className="text-spotify-green" />
-            Download for Android (.APK)
-          </button>
+          <HandleDownloadAndroid />
         </div>
 
           {/* Cards */}

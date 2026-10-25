@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth.store";
 import { ArrowRight, Download, Music, Shield, Smartphone, Zap } from "lucide-react";
+import { useAuthModal } from "@/hooks/useAuthModal";
+import { Modal } from "@/components/modal";
 
 const HandleDownloadAndroid = () => {
     return (
@@ -21,6 +23,7 @@ const HandleDownloadAndroid = () => {
 export default function RootPage() {
   const router = useRouter();
   const { user } = useAuthStore();
+  const { onClose, isOpen, onOpenLogin, onOpenRegister, type } = useAuthModal()
 
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
@@ -60,7 +63,7 @@ export default function RootPage() {
         
         <div className="flex items-center gap-4">
           <button 
-            onClick={() => {}}
+            onClick={() => onOpenLogin()}
             className="text-sm font-semibold text-spotify-muted hover:text-spotify-white transition cursor-pointer"
           >
             Login
@@ -135,6 +138,14 @@ export default function RootPage() {
           </div>
         </div>
       </main>
+
+      {isOpen && type === "login" && (
+        <Modal title={"Welcome Back"} onClose={onClose} isOpen={isOpen}>
+<div>
+  <h1>Testa</h1>
+</div>
+        </Modal>
+      )}
 
       </div>
   )

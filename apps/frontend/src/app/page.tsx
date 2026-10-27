@@ -6,6 +6,7 @@ import { useAuthStore } from "@/store/auth.store";
 import { ArrowRight, Download, Music, Shield, Smartphone, Zap } from "lucide-react";
 import { useAuthModal } from "@/hooks/useAuthModal";
 import { Modal } from "@/components/modal";
+import LoginForm from "@/components/auth/login-form";
 
 const HandleDownloadAndroid = () => {
     return (
@@ -140,10 +141,8 @@ export default function RootPage() {
       </main>
 
       {isOpen && type === "login" && (
-        <Modal title={"Welcome Back"} onClose={onClose} isOpen={isOpen}>
-<div>
-  <h1>Testa</h1>
-</div>
+        <Modal title={"Welcome Back"} onClose={onClose} isOpen={isOpen} maxWidthClass="w-xl">
+          <LoginForm />
         </Modal>
       )}
 

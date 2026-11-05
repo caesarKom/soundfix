@@ -9,8 +9,7 @@ import RegisterForm from "@/components/auth/register-form";
 const HandleDownloadAndroid = () => {
     return (
       <a 
-            href="/downloads/soundfix.apk"
-            download="soundfix.apk"
+            href="https://github.com/caesarKom/soundfix/releases/download/v1.0.0/soundfix.apk"
             className="flex items-center gap-2 w-full sm:w-auto justify-center bg-spotify-highlight border border-spotify-press text-spotify-white font-semibold px-8 py-4 rounded-full hover:bg-spotify-press hover:border-spotify-muted/30 transition cursor-pointer text-base backdrop-blur-md"
           >
             <Download size={18} className="text-spotify-green" />

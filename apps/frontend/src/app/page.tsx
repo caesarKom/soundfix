@@ -1,12 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/store/auth.store";
 import { ArrowRight, Download, Music, Shield, Smartphone, Zap } from "lucide-react";
 import { useAuthModal } from "@/hooks/useAuthModal";
 import { Modal } from "@/components/modal";
 import LoginForm from "@/components/auth/login-form";
+import RegisterForm from "@/components/auth/register-form";
 
 const HandleDownloadAndroid = () => {
     return (
@@ -22,26 +20,7 @@ const HandleDownloadAndroid = () => {
   };
 
 export default function RootPage() {
-  const router = useRouter();
-  const { user } = useAuthStore();
   const { onClose, isOpen, onOpenLogin, onOpenRegister, type } = useAuthModal()
-
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
-
-  useEffect(() => {
-    if (user) {
-      router.push("/home");
-    }
-  }, [user, router]);
-
-  if (user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-spotify-black text-spotify-muted text-sm">
-        Loading Soundfix...
-      </div>
-    );
-  }
 
   return (
     <div className="relative min-h-screen overflow-x-hidden font-sans bg-spotify-black text-spotify-white select-none">
@@ -70,7 +49,7 @@ export default function RootPage() {
             Login
           </button>
           <button 
-            onClick={() => {}}
+            onClick={() => onOpenRegister()}
             className="text-sm font-semibold bg-spotify-white text-spotify-black px-5 py-2.5 rounded-full hover:scale-104 active:scale-98 transition cursor-pointer"
           >
             Register
@@ -98,7 +77,7 @@ export default function RootPage() {
         {/* Buttons (CTA) */}
         <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
           <button 
-            onClick={() => setIsRegisterOpen(true)}
+            onClick={onOpenRegister}
             className="group flex items-center gap-2 w-full sm:w-auto justify-center bg-spotify-green text-spotify-black font-bold px-8 py-4 rounded-full shadow-lg shadow-spotify-green/20 hover:bg-brand hover:scale-104 active:scale-98 transition cursor-pointer text-base"
           >
             Start listening
@@ -140,12 +119,16 @@ export default function RootPage() {
         </div>
       </main>
 
-      {isOpen && type === "login" && (
-        <Modal title={"Welcome Back"} onClose={onClose} isOpen={isOpen} maxWidthClass="w-xl">
-          <LoginForm />
+      {isOpen && (
+        <Modal 
+          title={type === "login" ? "Welcome Back" : "Create an Account"} 
+          onClose={onClose} 
+          isOpen={isOpen} 
+          maxWidthClass="w-xl"
+        >
+          {type === "login" ? <LoginForm /> : <RegisterForm />}
         </Modal>
       )}
-
-      </div>
+    </div>
   )
 }

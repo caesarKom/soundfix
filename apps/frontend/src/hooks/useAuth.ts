@@ -7,16 +7,16 @@ export function useAuth() {
   const user = useAuthStore((state) => state.user)
   const setUser = useAuthStore((state) => state.setUser)
   const clearAuth = useAuthStore((state) => state.clearAuth)
-  const [mounted, setIsMounted] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchUser = async () => {
         if (!token) {
-            setIsMounted(false)
+            setIsLoading(false)
             return
         }
         if (token && user) {
-            setIsMounted(false)
+            setIsLoading(false)
             return
         }
         try {
@@ -26,7 +26,7 @@ export function useAuth() {
             console.error("Error fetch user: ", e)
             clearAuth()
         } finally {
-            setIsMounted(false)
+            setIsLoading(false)
         }
     }
     fetchUser()
@@ -35,7 +35,7 @@ export function useAuth() {
   return {
     user,
     token,
-    mounted,
+    isLoading,
     isAuthenticated: !!user && !!token,
   }
 }

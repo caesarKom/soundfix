@@ -3,6 +3,7 @@
 import { MediaEngine } from "@/components/media-engine";
 import { NowPlayingView } from "@/components/now-playing-view";
 import { PlayerBar } from "@/components/player-bar";
+import { ProtectedUserProvider } from "@/components/providers/user-provider";
 import { Sidebar } from "@/components/sidebar/sidebar";
 import type { ReactNode } from "react";
 
@@ -13,6 +14,7 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
   return (
+    <ProtectedUserProvider>
     <div className="flex h-screen flex-col bg-spotify-black text-spotify-white select-none overflow-hidden">
 
     <MediaEngine />
@@ -31,5 +33,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
       <PlayerBar />
     </footer>
   </div>
+  </ProtectedUserProvider>
   );
 }

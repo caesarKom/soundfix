@@ -1,7 +1,7 @@
 import { useAuthModal } from "@/hooks/useAuthModal";
 import { authService } from "@/services/auth.service";
 import { useRouter } from "next/navigation";
-import { SubmitEvent, useState } from "react";
+import { type SubmitEvent, useState } from "react";
 
 function RegisterForm() {
   const router = useRouter();
@@ -30,8 +30,8 @@ function RegisterForm() {
     }
   };
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-spotify-black px-4">
-          <div className="w-full max-w-md bg-spotify-base p-8 rounded-lg border border-spotify-press">
+    <div>
+          <div>
             <h1 className="text-3xl font-bold text-center mb-8 text-spotify-white">Sign up</h1>
             
             {error && (

@@ -1,6 +1,6 @@
+import { useAuthModal } from "@/hooks/useAuthModal";
 import { authService } from "@/services/auth.service";
 import { useAuthStore } from "@/store/auth.store";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -9,6 +9,7 @@ import type { SubmitEvent } from "react";
 function LoginForm() {
     const router = useRouter();
   const { setToken, setUser, user} = useAuthStore();
+  const { onOpenRegister, onClose } = useAuthModal()
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -37,6 +38,7 @@ function LoginForm() {
       setError(err.response?.data?.message || "Invalid credentials");
     } finally {
       setLoading(false);
+      onClose()
     }
   };
 
@@ -90,9 +92,9 @@ function LoginForm() {
 
         <div className="border-t border-spotify-press mt-6 pt-6 text-center text-sm text-spotify-muted">
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-spotify-white underline hover:text-spotify-green">
+          <span onClick={onOpenRegister} className="text-spotify-white underline hover:text-spotify-green">
             Sign up for Soundfix
-          </Link>
+          </span>
         </div>
       </div>
   )
